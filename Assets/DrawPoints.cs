@@ -37,6 +37,7 @@ public class DrawPoints : MonoBehaviour
 
     public void UploadPointData(Vector3[] pointPositions, Vector3[] colors)
     {
+        pointPositions = ModifyForPointShape(pointPositions);
         var amount = pointPositions.Length;
         _bufIndex += amount;
         _posBuffer.SetData (pointPositions, 0, _bufIndex % computeBufferCount, amount);
@@ -44,6 +45,18 @@ public class DrawPoints : MonoBehaviour
         // _material.SetBuffer ("posbuffer", _posBuffer);
         // _material.SetBuffer("colorbuffer", _colorBuffer);
         _canStartRendering = true;
+    }
+
+    private Vector3[] ModifyForPointShape(Vector3[] pointPositions)
+    {
+        if (_meshTopology == MeshTopology.Points) return pointPositions; // nothing to be done
+        if (_meshTopology == MeshTopology.Triangles)
+        {
+            // It's triangles... But let's make it a circle. 
+            return pointPositions; 
+        }
+
+        return pointPositions;
     }
 
     void OnRenderObject()
