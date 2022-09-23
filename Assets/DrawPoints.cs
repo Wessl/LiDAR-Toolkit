@@ -2,7 +2,16 @@ using UnityEngine;
 public class DrawPoints : MonoBehaviour
 {
     // Does this really need to be an object? Ah well
-    public Shader shader;
+    public Shader pointShader;
+    public Shader circleShader;
+    // Choose points (pixel size) or circles (constant world size)
+    private enum PointType
+    {
+        PixelPoint, CirclePoint
+    }
+    [SerializeField] private PointType _pointType;
+    
+    
     private Material _material;
     private int _bufIndex;
     private bool decreaseColorOverTime = false;
@@ -22,7 +31,7 @@ public class DrawPoints : MonoBehaviour
         _colorBuffer?.Release();
         _stride = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
         
-        _material = new Material(shader);
+        SetUp();
         _posBuffer = new ComputeBuffer (computeBufferCount, _stride, ComputeBufferType.Default);
         _colorBuffer = new ComputeBuffer(computeBufferCount, _stride, ComputeBufferType.Default);
         
@@ -30,14 +39,32 @@ public class DrawPoints : MonoBehaviour
         _canStartRendering = false;
     }
 
-    public void SetUp(MeshTopology meshTopology)
+    public void SetUp()
     {
-        _meshTopology = meshTopology;
+        if (_pointType == PointType.PixelPoint)
+        {
+            _material = new Material(pointShader);
+            _meshTopology = MeshTopology.Points;
+        }
+
+        else if (_pointType == PointType.CirclePoint)
+        {
+            _material = new Material(circleShader);
+            _meshTopology = MeshTopology.Triangles;
+        }
+        float[] bufferX = new float[1023];
+        float[] bufferY = new float[1023];
+        for (int i=0; i<1023; i++)
+        {
+            bufferX[i] = Random.Range(0.0f, 120.0f);
+            bufferY[i] = Random.Range(0.0f, 120.0f);
+        }
+        _material.SetFloatArray("BufferX", bufferX);
+        _material.SetFloatArray("BufferY", bufferY);
     }
 
     public void UploadPointData(Vector3[] pointPositions, Vector3[] colors)
     {
-        pointPositions = ModifyForPointShape(pointPositions);
         var amount = pointPositions.Length;
         _bufIndex += amount;
         _posBuffer.SetData (pointPositions, 0, _bufIndex % computeBufferCount, amount);
@@ -46,21 +73,11 @@ public class DrawPoints : MonoBehaviour
         // _material.SetBuffer("colorbuffer", _colorBuffer);
         _canStartRendering = true;
     }
-
-    private Vector3[] ModifyForPointShape(Vector3[] pointPositions)
-    {
-        if (_meshTopology == MeshTopology.Points) return pointPositions; // nothing to be done
-        if (_meshTopology == MeshTopology.Triangles)
-        {
-            // It's triangles... But let's make it a circle. 
-            return pointPositions; 
-        }
-
-        return pointPositions;
-    }
+    
 
     void OnRenderObject()
     {
+        RenderPointsNow();
         if (_canStartRendering)
         {
             RenderPointsNow();
@@ -70,9 +87,17 @@ public class DrawPoints : MonoBehaviour
     public void RenderPointsNow()
     {
         _material.SetPass(0);
-        _material.SetBuffer ("posbuffer", _posBuffer);
-        _material.SetBuffer("colorbuffer", _colorBuffer);
-        Graphics.DrawProceduralNow(MeshTopology.Points, _posBuffer.count, 1);
+        //_material.SetBuffer ("posbuffer", _posBuffer);
+        //_material.SetBuffer("colorbuffer", _colorBuffer);
+        if (_pointType == PointType.PixelPoint)
+        {
+            Graphics.DrawProceduralNow(MeshTopology.Points, _posBuffer.count, 1);
+        }
+        else if (_pointType == PointType.CirclePoint)
+        {
+            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, 1023);
+
+        }
     }
     void OnDestroy()
     {
