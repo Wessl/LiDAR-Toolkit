@@ -1,3 +1,2 @@
 // circles are cool and all... but i just realized I probably want spheres lol. otherwise i have to rotate them which is ass
 also tell przemyslaw that it still doesnt work
-maybe clone catlikecoding project and try to dissect it

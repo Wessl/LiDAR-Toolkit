@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+
 public class DrawPoints : MonoBehaviour
 {
     // Does this really need to be an object? Ah well
@@ -79,13 +81,14 @@ public class DrawPoints : MonoBehaviour
     }
     
 
-    void OnRenderObject()
+    void Update()
     {
         if (_canStartRendering)
         {
             RenderPointsNow();
         }
     }
+
 
     public void RenderPointsNow()
     {
@@ -101,7 +104,7 @@ public class DrawPoints : MonoBehaviour
             Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, 1023);
         } else if (_pointType == PointType.SpherePoint)
         {
-            Graphics.DrawMeshInstancedProcedural(_sphereMesh, 0, _material, bounds, _bufIndex);
+            Graphics.DrawMeshInstancedProcedural(_sphereMesh, 0, _material, bounds, _bufIndex,  null, ShadowCastingMode.Off, false);
         }
 
         Debug.Log(_bufIndex);
