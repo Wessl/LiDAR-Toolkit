@@ -10,8 +10,8 @@ Shader "Draw Circles"
             #pragma fragment PSMain
             #pragma target 5.0
  
-            float BufferX[2048];
-            float BufferY[2048];
+            StructuredBuffer<float3> posbuffer;
+            StructuredBuffer<float3> colorbuffer;    // not used atm
  
             double Mod(double x, double y)
             {
@@ -28,7 +28,7 @@ Shader "Draw Circles"
             float4 VSMain (uint id:SV_VertexID, out float2 uv:TEXCOORD0, inout uint instance:SV_INSTANCEID) : SV_POSITION
             {
                 // holy shit przemyslav is a fucking genius. the modulos for v turn into a 0,0,1,0,1,1... Got damn. which is the UV coordinates for two triangles forming a quad. ok
-                float3 center = float3(BufferX[instance], 0.0, BufferY[instance]);
+                float3 center = posbuffer[instance];
                 float u = sign(Mod(20.0, Mod(float(id), 6.0) + 2.0));
                 float v = sign(Mod(18.0, Mod(float(id), 6.0) + 2.0));
                 uv = float2(u,v);

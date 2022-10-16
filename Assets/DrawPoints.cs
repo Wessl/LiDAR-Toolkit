@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -41,7 +42,7 @@ public class DrawPoints : MonoBehaviour
         _colorBuffer = new ComputeBuffer(computeBufferCount, _stride, ComputeBufferType.Default);
         
         _bufIndex = 0;
-        bounds = new Bounds(Camera.main.transform.position, Vector3.one * (1000f));
+        bounds = new Bounds(Camera.main.transform.position, Vector3.one * (1000f)); // this should probably be done better imho
         _canStartRendering = false;
     }
 
@@ -83,9 +84,25 @@ public class DrawPoints : MonoBehaviour
 
     void Update()
     {
+        // 3D Spheres need to use Update() 
         if (_canStartRendering)
         {
-            RenderPointsNow();
+            if (_pointType == PointType.SpherePoint)
+            {
+                RenderPointsNow();
+            }
+        }
+    }
+
+    void OnRenderObject()
+    {
+        // Circles and Points use OnRenderObject
+        if (_canStartRendering)
+        {
+            if (_pointType != PointType.SpherePoint)
+            {
+                RenderPointsNow();
+            }
         }
     }
 
@@ -101,14 +118,19 @@ public class DrawPoints : MonoBehaviour
         }
         else if (_pointType == PointType.CirclePoint)
         {
-            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, 1023);
+            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, _bufIndex);
         } else if (_pointType == PointType.SpherePoint)
         {
             Graphics.DrawMeshInstancedProcedural(_sphereMesh, 0, _material, bounds, _bufIndex,  null, ShadowCastingMode.Off, false);
         }
-
-        Debug.Log(_bufIndex);
     }
+
+    private void OnValidate()
+    {
+        // Called whenever values in the inspector are changed
+        SetUp();
+    }
+
     void OnDestroy()
     {
         _posBuffer.Release();

@@ -317,7 +317,7 @@ MonoBehaviour:
   coneAngle: 30
   fireRate: 10
   superScanMinTime: 1
-  superScanSqrtNum: 500
+  superScanSqrtNum: 200
   lidarActivationKey: 323
   superScanKey: 121
   drawPointsRef: {fileID: 963194232}
@@ -356,8 +356,8 @@ MonoBehaviour:
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
-  _pointType: 2
-  _sphereMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  _pointType: 1
+  _sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &988206181
 GameObject:
   m_ObjectHideFlags: 0
