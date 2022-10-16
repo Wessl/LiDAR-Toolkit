@@ -15,7 +15,7 @@ public class DrawPoints : MonoBehaviour
     }
     [SerializeField] private PointType _pointType;
     [SerializeField] private Mesh _sphereMesh;
-    
+    [SerializeField][Range(0.0f, 10.0f)] [Header("Only applies to spheres atm")] private float pointScale;
     
     private Material _material;
     private int _bufIndex;
@@ -28,6 +28,7 @@ public class DrawPoints : MonoBehaviour
     private int computeBufferCount = 1048576; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
     private int _stride;
     private Bounds bounds;
+    
     
     // Mesh topology to render
     private MeshTopology _meshTopology = MeshTopology.Points;
@@ -65,6 +66,7 @@ public class DrawPoints : MonoBehaviour
         {
             _material = new Material(sphereShader);
             _material.enableInstancing = true;
+            _material.SetFloat("_Scale", pointScale);
         }
         
         

@@ -21,10 +21,11 @@ Shader "Unlit/DrawSpheres" {
 		
 		void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
 			surface.Albedo = saturate(input.worldPos * 0.5 + 0.5);
-			surface.Smoothness = _Smoothness;
+			surface.Smoothness = 0;
 		}
 		ENDCG
 	}
-						
+					
+		
 	FallBack "Diffuse"
 }
