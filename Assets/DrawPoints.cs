@@ -15,7 +15,7 @@ public class DrawPoints : MonoBehaviour
     }
     [SerializeField] private PointType _pointType;
     [SerializeField] private Mesh _sphereMesh;
-    [SerializeField][Range(0.0f, 10.0f)] [Header("Only applies to spheres atm")] private float pointScale;
+    [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Only applies to spheres atm")] private float pointScale;
     
     private Material _material;
     private int _bufIndex;
@@ -60,6 +60,7 @@ public class DrawPoints : MonoBehaviour
         {
             _material = new Material(circleShader);
             _meshTopology = MeshTopology.Triangles;
+            _material.SetFloat("_Scale", pointScale);
         }
         
         else if (_pointType == PointType.SpherePoint)

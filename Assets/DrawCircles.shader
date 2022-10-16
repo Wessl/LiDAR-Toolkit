@@ -12,6 +12,7 @@ Shader "Draw Circles"
  
             StructuredBuffer<float3> posbuffer;
             StructuredBuffer<float3> colorbuffer;    // not used atm
+            float _Scale;
  
             double Mod(double x, double y)
             {
@@ -32,7 +33,7 @@ Shader "Draw Circles"
                 float u = sign(Mod(20.0, Mod(float(id), 6.0) + 2.0));
                 float v = sign(Mod(18.0, Mod(float(id), 6.0) + 2.0));
                 uv = float2(u,v);
-                float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) + center, 1.0);
+                float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
                 return UnityObjectToClipPos(position);
             }
  
