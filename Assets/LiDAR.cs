@@ -51,10 +51,6 @@ public class LiDAR : MonoBehaviour
 
     IEnumerator SuperScan()
     {
-        // disable player and camera movement 
-        // playerControllerRef.CanMove = false;
-        // mouseLookRef.lookEnabled = false;
-        
         // lmao how the fuck did I figure all this out
         float aspect = mainCam.aspect;
         float magic = 1.75f;
@@ -85,9 +81,6 @@ public class LiDAR : MonoBehaviour
             var timePassed = Time.time - timeBefore;
             yield return new WaitForSecondsRealtime(superScanWaitTime - timePassed);
         }
-        // re-enable movement
-        // playerControllerRef.CanMove = true;
-        // mouseLookRef.lookEnabled = true;
     }
 
     void DefaultScan()

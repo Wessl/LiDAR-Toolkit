@@ -1,17 +1,15 @@
 using UnityEngine;
-public class DrawPoints : MonoBehaviour
+public class DrawSpheres : MonoBehaviour
 {
     // Does this really need to be an object? Ah well
     public Shader pointShader;
     public Shader circleShader;
-    public Shader sphereShader;
     // Choose points (pixel size) or circles (constant world size)
     private enum PointType
     {
-        PixelPoint, CirclePoint, SpherePoint
+        PixelPoint, CirclePoint
     }
     [SerializeField] private PointType _pointType;
-    [SerializeField] private Mesh _sphereMesh;
     
     
     private Material _material;
@@ -24,7 +22,6 @@ public class DrawPoints : MonoBehaviour
     private ComputeBuffer _colorBuffer;
     private int computeBufferCount = 1048576; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
     private int _stride;
-    private Bounds bounds;
     
     // Mesh topology to render
     private MeshTopology _meshTopology = MeshTopology.Points;
@@ -39,13 +36,11 @@ public class DrawPoints : MonoBehaviour
         _colorBuffer = new ComputeBuffer(computeBufferCount, _stride, ComputeBufferType.Default);
         
         _bufIndex = 0;
-        bounds = new Bounds(Camera.main.transform.position, Vector3.one * (1000f));
         _canStartRendering = false;
     }
 
     public void SetUp()
     {
-        
         if (_pointType == PointType.PixelPoint)
         {
             _material = new Material(pointShader);
@@ -57,14 +52,15 @@ public class DrawPoints : MonoBehaviour
             _material = new Material(circleShader);
             _meshTopology = MeshTopology.Triangles;
         }
-        
-        else if (_pointType == PointType.SpherePoint)
+        float[] bufferX = new float[1023];
+        float[] bufferY = new float[1023];
+        for (int i=0; i<1023; i++)
         {
-            _material = new Material(sphereShader);
-            _material.enableInstancing = true;
+            bufferX[i] = Random.Range(0.0f, 120.0f);
+            bufferY[i] = Random.Range(0.0f, 120.0f);
         }
-        
-        
+        _material.SetFloatArray("BufferX", bufferX);
+        _material.SetFloatArray("BufferY", bufferY);
     }
 
     public void UploadPointData(Vector3[] pointPositions, Vector3[] colors)
@@ -81,6 +77,7 @@ public class DrawPoints : MonoBehaviour
 
     void OnRenderObject()
     {
+        RenderPointsNow();
         if (_canStartRendering)
         {
             RenderPointsNow();
@@ -99,16 +96,12 @@ public class DrawPoints : MonoBehaviour
         else if (_pointType == PointType.CirclePoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, 1023);
-        } else if (_pointType == PointType.SpherePoint)
-        {
-            Graphics.DrawMeshInstancedProcedural(_sphereMesh, 0, _material, bounds, _bufIndex);
-        }
 
-        Debug.Log(_bufIndex);
+        }
     }
     void OnDestroy()
     {
-        _posBuffer.Release();
+        _posBuffer.Release();   // we cant have dirty data laying around (this can crash your pc if you dont have it)
         _colorBuffer.Release();
     }
 }
