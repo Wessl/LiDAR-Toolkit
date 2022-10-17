@@ -100,7 +100,7 @@ public class LiDAR : MonoBehaviour
         }
         
         // DrawDebug(cameraRay, p, q, pointsOnDisc);
-
+        
         Tuple<Vector3[],string[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
         drawPointsRef.UploadPointData(pointsHit.Item1, TagsToColors(pointsHit.Item2));     // It makes more sense to split these into two
     }
@@ -160,6 +160,8 @@ public class LiDAR : MonoBehaviour
             {
                 tagsOfPoints[i] = hit.collider.tag;
                 pointsHit[i++] = hit.point;
+                Debug.Log(hit.collider.gameObject.GetComponent<MeshRenderer>().material.color);
+                DrawDebugRayShoot(cameraRay, hit.point);
             }    
         }
         return new Tuple<Vector3[], string[]>(pointsHit, tagsOfPoints);
@@ -184,6 +186,12 @@ public class LiDAR : MonoBehaviour
         {
             Debug.DrawLine(mainCam.transform.position, point + cameraRay, Color.yellow);
         }
+    }
+    
+    private void DrawDebugRayShoot(Vector3 cameraRay, Vector3 endPoint)
+    {
+        Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
+        // Graphics.DrawProceduralNow(MeshTopology.Lines, ); // this is probably the thing to do 
     }
 
     private Vector3 GetPerpendicular(Vector3 cameraRay)

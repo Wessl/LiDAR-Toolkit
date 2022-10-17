@@ -357,8 +357,10 @@ MonoBehaviour:
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   _pointType: 2
-  _sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  pointScale: 0
+  _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  pointScale: 0.2
+  overrideColor: 1
+  pointColor: {r: 0.5943396, g: 0.23268954, b: 0.23268954, a: 0}
 --- !u!1 &988206181
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,7 +508,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5441f1694c563ed49a9c40ddb0bd7e31, type: 2}
+  - {fileID: 2100000, guid: 40536b308e821e440ae9656e891ce057, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

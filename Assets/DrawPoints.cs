@@ -11,11 +11,15 @@ public class DrawPoints : MonoBehaviour
     // Choose points (pixel size) or circles (constant world size)
     private enum PointType
     {
-        PixelPoint, CirclePoint, SpherePoint
+        PixelPoint, CirclePoint, MeshPoint
     }
     [SerializeField] private PointType _pointType;
-    [SerializeField] private Mesh _sphereMesh;
+    [SerializeField][Tooltip("E.g. sphere or cube mesh")] private Mesh _pointMesh;
     [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Only applies to spheres atm")] private float pointScale;
+    
+    // Color overrides
+    public bool overrideColor;
+    public Color pointColor;
     
     private Material _material;
     private int _bufIndex;
@@ -63,7 +67,7 @@ public class DrawPoints : MonoBehaviour
             _material.SetFloat("_Scale", pointScale);
         }
         
-        else if (_pointType == PointType.SpherePoint)
+        else if (_pointType == PointType.MeshPoint)
         {
             _material = new Material(sphereShader);
             _material.enableInstancing = true;
@@ -90,7 +94,7 @@ public class DrawPoints : MonoBehaviour
         // 3D Spheres need to use Update() 
         if (_canStartRendering)
         {
-            if (_pointType == PointType.SpherePoint)
+            if (_pointType == PointType.MeshPoint)
             {
                 RenderPointsNow();
             }
@@ -102,7 +106,7 @@ public class DrawPoints : MonoBehaviour
         // Circles and Points use OnRenderObject
         if (_canStartRendering)
         {
-            if (_pointType != PointType.SpherePoint)
+            if (_pointType != PointType.MeshPoint)
             {
                 RenderPointsNow();
             }
@@ -122,9 +126,9 @@ public class DrawPoints : MonoBehaviour
         else if (_pointType == PointType.CirclePoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, _bufIndex);
-        } else if (_pointType == PointType.SpherePoint)
+        } else if (_pointType == PointType.MeshPoint)
         {
-            Graphics.DrawMeshInstancedProcedural(_sphereMesh, 0, _material, bounds, _bufIndex,  null, ShadowCastingMode.Off, false);
+            Graphics.DrawMeshInstancedProcedural(_pointMesh, 0, _material, bounds, _bufIndex,  null, ShadowCastingMode.Off, false);
         }
     }
 
