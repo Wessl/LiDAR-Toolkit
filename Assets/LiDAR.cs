@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+[RequireComponent(typeof(DrawPoints))]
+[RequireComponent(typeof(LineRenderer))]
 public class LiDAR : MonoBehaviour
 {
     private Camera mainCam;
@@ -20,10 +22,10 @@ public class LiDAR : MonoBehaviour
     public AudioSource audioSource;
 
     private List<RaycastHit> hits = new List<RaycastHit>();
+
+    [SerializeField] private LineRenderer _lineRenderer;
     // public PlayerController playerControllerRef;
     // public MouseLook mouseLookRef;
-    private int activatorHitAmount = 0;
-    public int enemyHitAmountTriggerThreshold = 30;
     private bool disabled;
     
     
@@ -76,8 +78,8 @@ public class LiDAR : MonoBehaviour
                 var v =  (Mathf.Cos(meta) * upDir/(magic) + Mathf.Sin((float)theta) * q/(magic/aspect));    // instead of magic numbers use randoms that are half of cell size and use screen ratio for other numbers
                 pointsOnPlane[j] = v;
             }
-            Tuple<Vector3[],Vector4[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane);
-            drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2);     // It makes more sense to split these into two
+            ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane);
+            drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);  
             var timePassed = Time.time - timeBefore;
             yield return new WaitForSecondsRealtime(superScanWaitTime - timePassed);
         }
@@ -101,64 +103,25 @@ public class LiDAR : MonoBehaviour
         
         // DrawDebug(cameraRay, p, q, pointsOnDisc);
         
-        Tuple<Vector3[],Vector4[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
-        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2);     // It makes more sense to split these into two
-    }
-
-    private Vector3[] TagsToColors(string[] tags)
-    {
-        Vector3[] colors = new Vector3[tags.Length];
-        int i = 0;
-        foreach (var tag in tags)
-        {
-            switch (tag)
-            {
-                case "Untagged":
-                    colors[i++] = new Vector3(1, 1, 0);
-                    break;
-                case "Interactible":
-                    colors[i++] = new Vector3(0, 1, 0);
-                    break;
-                case "Goal":
-                    colors[i++] = new Vector3(0.698f, 0.4f, 1f);
-                    break;
-                case "Enemy":
-                    colors[i++] = new Vector3(0.733f, 0.031f, 0.031f);
-                    activatorHitAmount++;
-                    break;
-                case "Wood":
-                    colors[i++] = new Vector3(165/255f, 42/255f, 42/255f);
-                    break;
-                case "WashitsuWall":
-                    colors[i++] = new Vector3(228 / 255f, 186 / 255f, 65 / 255f);
-                    break;
-                case "Tatami":
-                    colors[i++] = new Vector3(68/255f, 48/255f, 24/255f);
-                    break;
-                case "Kanji":
-                    colors[i++] = new Vector3(0f, 0f, 0);
-                    activatorHitAmount++;
-                    break;
-                default:
-                    colors[i++] = new Vector3(0.5f,0.4f,0.3f);
-                    break;
-            }
-        }
-        return colors;
+        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
+        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
 
 
-    private Tuple<Vector3[],Vector4[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
+
+
+    private ValueTuple<Vector3[],Vector4[],Vector3[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
         Vector3[] pointsHit = new Vector3[points.Length];
         Vector4[] pointColors = new Vector4[points.Length];
+        Vector3[] normals = new Vector3[points.Length];
         int i = 0;
         foreach (var point in points)
         {
             RaycastHit hit;
             if (Physics.Raycast(cameraPos, (cameraRay + point), out hit))
             {
-                // tagsOfPoints[i] = hit.collider.tag;
+                
                 if (drawPointsRef.overrideColor)
                 {
                     pointColors[i] = drawPointsRef.pointColor;
@@ -167,13 +130,15 @@ public class LiDAR : MonoBehaviour
                 {
                     pointColors[i] = hit.collider.gameObject.GetComponent<MeshRenderer>().material.color;
                 }
-                
+
+                normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
+                
                 
                 DrawDebugRayShoot(cameraRay, hit.point);
             }    
         }
-        return new Tuple<Vector3[], Vector4[]>(pointsHit, pointColors);
+        return new ValueTuple<Vector3[], Vector4[], Vector3[]>(pointsHit, pointColors, normals);
     }
     
     private Vector3 GenRandPointDisc(Vector3 p, Vector3 q)
@@ -186,21 +151,18 @@ public class LiDAR : MonoBehaviour
         return v;
     }
 
-    private void DrawDebug(Vector3 cameraRay, Vector3 perpendicular, Vector3 q, Vector3[] pointOnDisc)
-    {
-        Debug.DrawLine(mainCam.transform.position, cameraRay, Color.green, 20);
-        Debug.DrawLine(cameraRay, perpendicular + cameraRay, Color.red, 20);
-        Debug.DrawLine(cameraRay, q + cameraRay, Color.yellow, 20);
-        foreach (var point in pointOnDisc)
-        {
-            Debug.DrawLine(mainCam.transform.position, point + cameraRay, Color.yellow);
-        }
-    }
+
     
     private void DrawDebugRayShoot(Vector3 cameraRay, Vector3 endPoint)
     {
-        Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
+        // Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
         // Graphics.DrawProceduralNow(MeshTopology.Lines, ); // this is probably the thing to do 
+        // or https://answers.unity.com/questions/1771313/how-to-build-a-line-drawing-method-called-in-updat.html
+        
+        Vector3[] boi = new Vector3[2];
+        boi[0] = mainCam.transform.position + cameraRay;
+        boi[1] = endPoint;
+        _lineRenderer.SetPositions(boi);
     }
 
     private Vector3 GetPerpendicular(Vector3 cameraRay)
@@ -232,5 +194,59 @@ public class LiDAR : MonoBehaviour
         perp[axisMax] = cameraRay[midIndex];
         perp[midIndex] = -max;
         return perp.normalized;
+    }
+    
+    /*
+     * Currently not used but I don't want to delete it
+     */
+    private Vector3[] TagsToColors(string[] tags)
+    {
+        Vector3[] colors = new Vector3[tags.Length];
+        int i = 0;
+        foreach (var tag in tags)
+        {
+            switch (tag)
+            {
+                case "Untagged":
+                    colors[i++] = new Vector3(1, 1, 0);
+                    break;
+                case "Interactible":
+                    colors[i++] = new Vector3(0, 1, 0);
+                    break;
+                case "Goal":
+                    colors[i++] = new Vector3(0.698f, 0.4f, 1f);
+                    break;
+                case "Enemy":
+                    colors[i++] = new Vector3(0.733f, 0.031f, 0.031f);
+                    break;
+                case "Wood":
+                    colors[i++] = new Vector3(165/255f, 42/255f, 42/255f);
+                    break;
+                case "WashitsuWall":
+                    colors[i++] = new Vector3(228 / 255f, 186 / 255f, 65 / 255f);
+                    break;
+                case "Tatami":
+                    colors[i++] = new Vector3(68/255f, 48/255f, 24/255f);
+                    break;
+                case "Kanji":
+                    colors[i++] = new Vector3(0f, 0f, 0);
+                    break;
+                default:
+                    colors[i++] = new Vector3(0.5f,0.4f,0.3f);
+                    break;
+            }
+        }
+        return colors;
+    }
+    
+    private void DrawDebug(Vector3 cameraRay, Vector3 perpendicular, Vector3 q, Vector3[] pointOnDisc)
+    {
+        Debug.DrawLine(mainCam.transform.position, cameraRay, Color.green, 20);
+        Debug.DrawLine(cameraRay, perpendicular + cameraRay, Color.red, 20);
+        Debug.DrawLine(cameraRay, q + cameraRay, Color.yellow, 20);
+        foreach (var point in pointOnDisc)
+        {
+            Debug.DrawLine(mainCam.transform.position, point + cameraRay, Color.yellow);
+        }
     }
 }

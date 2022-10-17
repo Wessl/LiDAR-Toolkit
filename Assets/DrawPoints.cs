@@ -79,7 +79,7 @@ public class DrawPoints : MonoBehaviour
         
     }
 
-    public void UploadPointData(Vector3[] pointPositions, Vector4[] colors)
+    public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
     {
         var amount = pointPositions.Length;
         _bufIndex += amount;
