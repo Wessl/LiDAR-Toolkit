@@ -9,9 +9,14 @@ Shader "Unlit/DrawSpheres" {
 		#pragma surface ConfigureSurface Standard fullforwardshadows addshadow
 		#pragma instancing_options assumeuniformscaling procedural:ConfigureProcedural
 		#pragma editor_sync_compilation
-		#pragma target 4.5
+		#pragma target 5.0
 
+		#ifdef SHADER_API_D3D11
+		StructuredBuffer<float4> colorbuffer;
+		#endif
+		
 		#include "Assets/PointGPU.hlsl"
+		
 		
 		struct Input {
 			float3 worldPos;
@@ -20,7 +25,7 @@ Shader "Unlit/DrawSpheres" {
 		float _Smoothness;
 		
 		void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
-			surface.Albedo = saturate(input.worldPos * 0.5 + 0.5);
+			surface.Albedo = color;
 			surface.Smoothness = 0;
 		}
 		ENDCG

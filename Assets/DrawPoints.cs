@@ -30,7 +30,8 @@ public class DrawPoints : MonoBehaviour
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
     private int computeBufferCount = 1048576; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
-    private int _stride;
+    private int _strideVec3;
+    private int _strideVec4;
     private Bounds bounds;
     
     
@@ -40,11 +41,12 @@ public class DrawPoints : MonoBehaviour
     {
         _posBuffer?.Release();
         _colorBuffer?.Release();
-        _stride = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
+        _strideVec3 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
+        _strideVec4 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector4));
         
         SetUp();
-        _posBuffer = new ComputeBuffer (computeBufferCount, _stride, ComputeBufferType.Default);
-        _colorBuffer = new ComputeBuffer(computeBufferCount, _stride, ComputeBufferType.Default);
+        _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
+        _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
         
         _bufIndex = 0;
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * (1000f)); // this should probably be done better imho
@@ -77,7 +79,7 @@ public class DrawPoints : MonoBehaviour
         
     }
 
-    public void UploadPointData(Vector3[] pointPositions, Vector3[] colors)
+    public void UploadPointData(Vector3[] pointPositions, Vector4[] colors)
     {
         var amount = pointPositions.Length;
         _bufIndex += amount;

@@ -76,8 +76,8 @@ public class LiDAR : MonoBehaviour
                 var v =  (Mathf.Cos(meta) * upDir/(magic) + Mathf.Sin((float)theta) * q/(magic/aspect));    // instead of magic numbers use randoms that are half of cell size and use screen ratio for other numbers
                 pointsOnPlane[j] = v;
             }
-            Tuple<Vector3[],string[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane);
-            drawPointsRef.UploadPointData(pointsHit.Item1, TagsToColors(pointsHit.Item2));     // It makes more sense to split these into two
+            Tuple<Vector3[],Vector4[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane);
+            drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2);     // It makes more sense to split these into two
             var timePassed = Time.time - timeBefore;
             yield return new WaitForSecondsRealtime(superScanWaitTime - timePassed);
         }
@@ -101,8 +101,8 @@ public class LiDAR : MonoBehaviour
         
         // DrawDebug(cameraRay, p, q, pointsOnDisc);
         
-        Tuple<Vector3[],string[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
-        drawPointsRef.UploadPointData(pointsHit.Item1, TagsToColors(pointsHit.Item2));     // It makes more sense to split these into two
+        Tuple<Vector3[],Vector4[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
+        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2);     // It makes more sense to split these into two
     }
 
     private Vector3[] TagsToColors(string[] tags)
@@ -148,23 +148,32 @@ public class LiDAR : MonoBehaviour
     }
 
 
-    private Tuple<Vector3[],String[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
+    private Tuple<Vector3[],Vector4[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
         Vector3[] pointsHit = new Vector3[points.Length];
-        string[] tagsOfPoints = new string[points.Length];
+        Vector4[] pointColors = new Vector4[points.Length];
         int i = 0;
         foreach (var point in points)
         {
             RaycastHit hit;
             if (Physics.Raycast(cameraPos, (cameraRay + point), out hit))
             {
-                tagsOfPoints[i] = hit.collider.tag;
+                // tagsOfPoints[i] = hit.collider.tag;
+                if (drawPointsRef.overrideColor)
+                {
+                    pointColors[i] = drawPointsRef.pointColor;
+                }
+                else
+                {
+                    pointColors[i] = hit.collider.gameObject.GetComponent<MeshRenderer>().material.color;
+                }
+                
                 pointsHit[i++] = hit.point;
-                Debug.Log(hit.collider.gameObject.GetComponent<MeshRenderer>().material.color);
+                
                 DrawDebugRayShoot(cameraRay, hit.point);
             }    
         }
-        return new Tuple<Vector3[], string[]>(pointsHit, tagsOfPoints);
+        return new Tuple<Vector3[], Vector4[]>(pointsHit, pointColors);
     }
     
     private Vector3 GenRandPointDisc(Vector3 p, Vector3 q)

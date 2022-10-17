@@ -8,7 +8,7 @@ namespace Editor
         public override void OnInspectorGUI()
         {
             // DrawDefaultInspector();
-            
+            serializedObject.Update();
             DrawPoints myTarget = (DrawPoints)target;
             
             // Default stuff, except color
@@ -16,10 +16,11 @@ namespace Editor
 
 
             EditorGUILayout.Separator();
-            myTarget.overrideColor = EditorGUILayout.BeginToggleGroup("Should material color be overwritten", myTarget.overrideColor);
+            myTarget.overrideColor = EditorGUILayout.BeginToggleGroup("Override material color", myTarget.overrideColor);
             myTarget.pointColor = EditorGUILayout.ColorField("Color", myTarget.pointColor);
             EditorGUILayout.EndToggleGroup();
             
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

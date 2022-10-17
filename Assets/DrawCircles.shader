@@ -11,7 +11,7 @@ Shader "Draw Circles"
             #pragma target 5.0
  
             StructuredBuffer<float3> posbuffer;
-            StructuredBuffer<float3> colorbuffer;    // not used atm
+            StructuredBuffer<float4> colorbuffer;    // not used atm
             float _Scale;
  
             double Mod(double x, double y)
@@ -41,7 +41,7 @@ Shader "Draw Circles"
             {
                 float2 S = uv*2.0-1.0;
                 if (dot(S.xy, S.xy) > 1.0) discard;
-                return float4(hash(float(instance)), 1.0);
+                return colorbuffer[instance];
             }
             ENDCG
         }

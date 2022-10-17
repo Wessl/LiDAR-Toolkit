@@ -10,7 +10,7 @@ Shader "Draw Points"
             #pragma target 5.0
  
             StructuredBuffer<float3> posbuffer;
-            StructuredBuffer<float3> colorbuffer;
+            StructuredBuffer<float4> colorbuffer;
            
             struct shaderdata
             {
@@ -22,7 +22,7 @@ Shader "Draw Points"
             {
                 shaderdata vs;
                 vs.vertex = UnityObjectToClipPos(float4(posbuffer[id], 1.0));
-                vs.color = float4(colorbuffer[id], 1.0);
+                vs.color = float4(colorbuffer[id]);
                 return vs;
             }
  

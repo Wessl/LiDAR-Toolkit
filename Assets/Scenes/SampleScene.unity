@@ -356,7 +356,7 @@ MonoBehaviour:
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
-  _pointType: 2
+  _pointType: 1
   _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.2
   overrideColor: 1
