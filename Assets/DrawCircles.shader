@@ -33,16 +33,15 @@ Shader "Draw Circles"
                 float u = sign(Mod(20.0, Mod(float(id), 6.0) + 2.0));
                 float v = sign(Mod(18.0, Mod(float(id), 6.0) + 2.0));
                 uv = float2(u,v);
-                // BILLBOARD
                 float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
-                
-                float4 pospos = UnityObjectToClipPos(position);
 
-                float3 vpos = mul((float3x3)unity_ObjectToWorld, pospos.xyz);
-				float4 worldCoord = float4(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23, 1);
-				float4 viewPos = mul(UNITY_MATRIX_V, worldCoord) + float4(vpos, 0);
-				float4 outPos = mul(UNITY_MATRIX_P, viewPos);
-                return outPos;
+                // billboard. why does this frankensteiny mess even work remotely
+                float4 pos2 = mul(UNITY_MATRIX_P, 
+                mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
+                + float4(sign(u)-0.5, sign(v)-0.5, 0.0, 0.0)*2
+                * float4(_Scale, _Scale, 1.0, 1.0));
+                return UnityObjectToClipPos(float4(center*2.0, 1.0)) + pos2;
+                return UnityObjectToClipPos(position);
             }
  
             float4 PSMain (float4 vertex:SV_POSITION, float2 uv:TEXCOORD0, uint instance:SV_INSTANCEID) : SV_Target

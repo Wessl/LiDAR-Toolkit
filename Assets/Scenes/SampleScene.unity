@@ -429,9 +429,11 @@ MonoBehaviour:
   lidarActivationKey: 323
   superScanKey: 121
   drawPointsRef: {fileID: 963194232}
+  defaultScanSFX: {fileID: 0}
   superScanSFX: {fileID: 0}
   audioSource: {fileID: 0}
-  _lineRenderer: {fileID: 963194229}
+  useLineRenderer: 1
+  lineRenderer: {fileID: 963194229}
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,7 +468,7 @@ MonoBehaviour:
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   _pointType: 1
   _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  pointScale: 0.2
+  pointScale: 0.196
   overrideColor: 1
   pointColor: {r: 0.75030607, g: 0.8773585, b: 0, a: 0}
 --- !u!1 &988206181
