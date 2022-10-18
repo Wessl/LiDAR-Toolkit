@@ -22,8 +22,10 @@ public class LiDAR : MonoBehaviour
     public AudioSource audioSource;
 
     private List<RaycastHit> hits = new List<RaycastHit>();
-
-    [SerializeField] private LineRenderer _lineRenderer;
+    [Tooltip("Should lines be drawn between player and new point sources?")]
+    public bool useLineRenderer;
+    public LineRenderer lineRenderer;
+    
     // public PlayerController playerControllerRef;
     // public MouseLook mouseLookRef;
     private bool disabled;
@@ -35,6 +37,7 @@ public class LiDAR : MonoBehaviour
         mainCam = Camera.main;
         superScanWaitTime = 1 / (superScanSqrtNum / superScanMinTime);
         disabled = false;
+        lineRenderer.positionCount = 2;
     }
 
     // Update is called once per frame
@@ -134,8 +137,7 @@ public class LiDAR : MonoBehaviour
                 normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
                 
-                
-                DrawDebugRayShoot(cameraRay, hit.point);
+                if (useLineRenderer) DrawRayBetweenPoints(cameraRay, hit.point);
             }    
         }
         return new ValueTuple<Vector3[], Vector4[], Vector3[]>(pointsHit, pointColors, normals);
@@ -155,14 +157,19 @@ public class LiDAR : MonoBehaviour
     
     private void DrawDebugRayShoot(Vector3 cameraRay, Vector3 endPoint)
     {
+        Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
+    }
+    
+    private void DrawRayBetweenPoints(Vector3 cameraRay, Vector3 endPoint)
+    {
         // Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
         // Graphics.DrawProceduralNow(MeshTopology.Lines, ); // this is probably the thing to do 
         // or https://answers.unity.com/questions/1771313/how-to-build-a-line-drawing-method-called-in-updat.html
         
-        Vector3[] boi = new Vector3[2];
-        boi[0] = mainCam.transform.position + cameraRay;
-        boi[1] = endPoint;
-        _lineRenderer.SetPositions(boi);
+        Vector3[] pos = new Vector3[2];
+        pos[0] = mainCam.transform.position + cameraRay; 
+        pos[1] = endPoint;
+        lineRenderer.SetPositions(pos);
     }
 
     private Vector3 GetPerpendicular(Vector3 cameraRay)

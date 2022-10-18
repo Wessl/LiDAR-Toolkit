@@ -13,9 +13,13 @@ public class DrawPoints : MonoBehaviour
     {
         PixelPoint, CirclePoint, MeshPoint
     }
-    [SerializeField] private PointType _pointType;
-    [SerializeField][Tooltip("E.g. sphere or cube mesh")] private Mesh _pointMesh;
-    [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Only applies to spheres atm")] private float pointScale;
+    [SerializeField] 
+    private PointType _pointType;
+    [SerializeField][Tooltip("E.g. sphere or cube mesh")] 
+    private Mesh _pointMesh;
+    [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Only applies to spheres atm")] 
+    private float pointScale;
+
     
     // Color overrides
     public bool overrideColor;
