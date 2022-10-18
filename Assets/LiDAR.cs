@@ -9,15 +9,23 @@ using Random = UnityEngine.Random;
 public class LiDAR : MonoBehaviour
 {
     private Camera mainCam;
-
+    
+    [Tooltip("The angle of the cone for the default scan")]
     public float coneAngle;
+    
+    [Tooltip("The amount of points to create per second")]
     public float fireRate;
+    
+    [Tooltip("The minimum amount of time to complete a super scan")]
     public float superScanMinTime = 1f;
+    [Tooltip("The number of points in one dimension created by the super scan. E.g. 200, will create 200x200 in the super scan area")]
     public int superScanSqrtNum = 200;
     public KeyCode lidarActivationKey = KeyCode.Mouse0;
     public KeyCode superScanKey = KeyCode.Y;
     public DrawPoints drawPointsRef;
     private float superScanWaitTime;
+    [Header("Audio")] 
+    public AudioClip defaultScanSFX;
     public AudioClip superScanSFX;
     public AudioSource audioSource;
 
@@ -44,6 +52,7 @@ public class LiDAR : MonoBehaviour
     void Update()
     {
         if (disabled) return;
+        lineRenderer.SetPositions(new Vector3[2]);    // Clear each frame
         if (Input.GetKeyDown(superScanKey))
         {
             StartCoroutine(SuperScan());
@@ -103,15 +112,10 @@ public class LiDAR : MonoBehaviour
         {
             pointsOnDisc[i] = GenRandPointDisc(p,q);
         }
-        
-        // DrawDebug(cameraRay, p, q, pointsOnDisc);
-        
+
         ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
-
-
-
 
     private ValueTuple<Vector3[],Vector4[],Vector3[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
