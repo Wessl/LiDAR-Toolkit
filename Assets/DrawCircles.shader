@@ -22,6 +22,8 @@ Shader "Draw Circles"
             {
                 float4 vertex : SV_POSITION;
                 float4 color : TEXCOORD1;
+                float2 uv : TEXCOORD0;
+                uint instance : SV_INSTANCEID;
             };
  
             double Mod(double x, double y)
@@ -36,13 +38,13 @@ Shader "Draw Circles"
                 return frac((p3.xxy+p3.yzz)*p3.zyx);
             }
             
-            float4 VSMain (uint id:SV_VertexID, out float2 uv:TEXCOORD0, inout uint instance:SV_INSTANCEID) : SV_POSITION
+            shaderdata VSMain (uint id:SV_VertexID, uint instance:SV_INSTANCEID)
             {
-                // holy shit przemyslav is a fucking genius. the modulos for v turn into a 0,0,1,0,1,1... Got damn. which is the UV coordinates for two triangles forming a quad. ok
+                shaderdata vs;
                 float3 center = posbuffer[instance];
                 float u = sign(Mod(20.0, Mod(float(id), 6.0) + 2.0));
                 float v = sign(Mod(18.0, Mod(float(id), 6.0) + 2.0));
-                uv = float2(u,v);
+                vs.uv = float2(u,v);
                 float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
                 dist = distance(camerapos, center);
 
@@ -51,17 +53,18 @@ Shader "Draw Circles"
                 mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
                 + float4(sign(u)-0.5, sign(v)-0.5, 0.0, 0.0)*2
                 * float4(_Scale, _Scale, 1.0, 1.0));
-                return UnityObjectToClipPos(float4(center*2.0, 1.0)) + pos2;
+                vs.color = lerp(colorbuffer[instance], farcolor, clamp((dist/fardist),0.0001,1));
+                vs.vertex = UnityObjectToClipPos(float4(center*2.0, 1.0)) + pos2;
+                vs.instance = instance;
                 
+                return vs;
             }
  
-            float4 PSMain (float4 vertex:SV_POSITION, float2 uv:TEXCOORD0, uint instance:SV_INSTANCEID) : SV_Target
+            float4 PSMain (shaderdata ps) : SV_Target
             {
-                float2 S = uv*2.0-1.0;
+                float2 S = ps.uv*2.0-1.0;
                 if (dot(S.xy, S.xy) > 1.0) discard;
-                
-                float4 newcol = lerp(colorbuffer[instance], farcolor, clamp((dist/fardist),0.0001,1));
-                return newcol;
+                return ps.color;
             }
             ENDCG
         }
