@@ -25,7 +25,8 @@ Shader "Unlit/DrawSpheres" {
 		float _Smoothness;
 		
 		void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
-			surface.Albedo = color;
+			float4 newcol = lerp(color, farcolor, clamp((dist/fardist),0.0001,1));
+			surface.Albedo = newcol;
 			surface.Smoothness = 0;
 		}
 		ENDCG

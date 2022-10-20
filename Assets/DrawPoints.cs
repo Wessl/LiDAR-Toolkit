@@ -24,6 +24,9 @@ public class DrawPoints : MonoBehaviour
     // Color overrides
     public bool overrideColor;
     public Color pointColor;
+    public bool useColorGradient;
+    public Color farPointColor;
+    public float farPointDistance;
     
     private Material _material;
     private int _bufIndex;
@@ -37,6 +40,7 @@ public class DrawPoints : MonoBehaviour
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
+    private Camera mainCam;
     
     
     // Mesh topology to render
@@ -54,6 +58,7 @@ public class DrawPoints : MonoBehaviour
         
         _bufIndex = 0;
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * (1000f)); // this should probably be done better imho
+        mainCam = Camera.main;
         _canStartRendering = false;
     }
 
@@ -79,7 +84,8 @@ public class DrawPoints : MonoBehaviour
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         }
-        
+        _material.SetColor("farcolor", farPointColor);
+        _material.SetFloat("fardist", farPointDistance);
         
     }
 
@@ -123,6 +129,7 @@ public class DrawPoints : MonoBehaviour
     public void RenderPointsNow()
     {
         _material.SetPass(0);
+        _material.SetVector("camerapos", mainCam.transform.position);
         _material.SetBuffer ("posbuffer", _posBuffer);
         _material.SetBuffer("colorbuffer", _colorBuffer);
         if (_pointType == PointType.PixelPoint)
@@ -138,7 +145,7 @@ public class DrawPoints : MonoBehaviour
         }
     }
 
-    private void OnValidate()
+    public void OnValidate()
     {
         // Called whenever values in the inspector are changed
         SetUp();

@@ -4,6 +4,10 @@
 
 float _Scale;
 float4 color;
+float4 farcolor;
+float4 camerapos;
+float dist;
+float fardist;
 
 void ConfigureProcedural () {
 	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
@@ -12,6 +16,8 @@ void ConfigureProcedural () {
 		unity_ObjectToWorld = 0.0;
 		unity_ObjectToWorld._m03_m13_m23_m33 = float4(position, 1.0);
 		unity_ObjectToWorld._m00_m11_m22 = _Scale;
+
+		dist = distance(camerapos, position);
 	#endif
 }
 
