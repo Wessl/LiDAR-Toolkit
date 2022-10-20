@@ -11,6 +11,10 @@ Shader "Draw Points"
  
             StructuredBuffer<float3> posbuffer;
             StructuredBuffer<float4> colorbuffer;
+            float4 farcolor;
+            float4 camerapos;
+            float dist;
+            float fardist;
            
             struct shaderdata
             {
@@ -22,7 +26,9 @@ Shader "Draw Points"
             {
                 shaderdata vs;
                 vs.vertex = UnityObjectToClipPos(float4(posbuffer[id], 1.0));
-                vs.color = float4(colorbuffer[id]);
+                dist = distance(camerapos, posbuffer[id]);
+                float4 newcol = lerp(float4(colorbuffer[id]), farcolor, clamp((dist/fardist),0.0001,1));
+                vs.color = newcol;
                 return vs;
             }
  
