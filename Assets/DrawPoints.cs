@@ -57,7 +57,6 @@ public class DrawPoints : MonoBehaviour
         _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
         
         _bufIndex = 0;
-        bounds = new Bounds(Camera.main.transform.position, Vector3.one * (1000f)); // this should probably be done better imho
         mainCam = Camera.main;
         _canStartRendering = false;
     }
@@ -128,9 +127,10 @@ public class DrawPoints : MonoBehaviour
 
     public void RenderPointsNow()
     {
+        bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
         _material.SetPass(0);
         _material.SetVector("camerapos", mainCam.transform.position);
-        _material.SetBuffer ("posbuffer", _posBuffer);
+        _material.SetBuffer("posbuffer", _posBuffer);
         _material.SetBuffer("colorbuffer", _colorBuffer);
         if (_pointType == PointType.PixelPoint)
         {

@@ -38,6 +38,11 @@ public class LiDAR : MonoBehaviour
     // public MouseLook mouseLookRef;
     private bool disabled;
     
+    public enum ScanType
+    {
+        Circle, Line, Square
+    }
+    public ScanType scanType;
     
     // Start is called before the first frame update
     void Start()
@@ -61,6 +66,44 @@ public class LiDAR : MonoBehaviour
         {
             DefaultScan();
         }
+    }
+
+    private void DefaultScan()
+    {
+        if (scanType == ScanType.Circle)
+        {
+            CircleScan();
+        } else if (scanType == ScanType.Line)
+        {
+            LineScan();
+        } else if (scanType == ScanType.Square)
+        {
+            SquareScan();
+        }
+    }
+
+    private void SquareScan()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void LineScan()
+    {
+        // Store variables relating to camera view dir and pos
+        var facingDir = mainCam.gameObject.transform.forward;
+        var cameraPos = mainCam.transform.position;
+        var cameraRay = (cameraPos + facingDir);
+        var right = mainCam.transform.right;
+        
+        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        Vector3[] pointsOnLine = new Vector3[i_fireRate];
+        for (int i = 0; i < i_fireRate; i++)
+        {
+            pointsOnLine[i] = right * Random.Range(-1f, 1f);
+        }
+        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnLine);
+        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);  
+        
     }
 
     IEnumerator SuperScan()
@@ -97,7 +140,7 @@ public class LiDAR : MonoBehaviour
         }
     }
 
-    void DefaultScan()
+    void CircleScan()
     {
         // Store variables relating to camera view dir and pos
         var facingDir = mainCam.gameObject.transform.forward;
@@ -158,7 +201,7 @@ public class LiDAR : MonoBehaviour
     }
 
 
-    
+
     private void DrawDebugRayShoot(Vector3 cameraRay, Vector3 endPoint)
     {
         Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
