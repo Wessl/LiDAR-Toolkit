@@ -17,6 +17,10 @@ namespace Editor
 
 
             EditorGUILayout.Separator();
+            if(GUILayout.Button("Clear All Points"))
+            {
+                myTarget.ClearAllPoints();
+            }
             myTarget.overrideColor = EditorGUILayout.BeginToggleGroup("Override material color", myTarget.overrideColor);
             myTarget.pointColor = EditorGUILayout.ColorField("Color", myTarget.pointColor);
             EditorGUILayout.EndToggleGroup();

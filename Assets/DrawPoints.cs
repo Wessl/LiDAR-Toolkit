@@ -151,6 +151,11 @@ public class DrawPoints : MonoBehaviour
         SetUp();
     }
 
+    public void ClearAllPoints()
+    {
+        Awake();
+    }
+
     void OnDestroy()
     {
         _posBuffer.Release();
