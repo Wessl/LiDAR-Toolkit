@@ -33,6 +33,7 @@ public class LiDAR : MonoBehaviour
     [Tooltip("Should lines be drawn between player and new point sources?")]
     public bool useLineRenderer;
     public LineRenderer lineRenderer;
+    [SerializeField] private int maxLinesPerFrame;
     
     // public PlayerController playerControllerRef;
     // public MouseLook mouseLookRef;
@@ -209,11 +210,8 @@ public class LiDAR : MonoBehaviour
     
     private void DrawRayBetweenPoints(Vector3 cameraRay, Vector3 endPoint)
     {
-        // Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
-        // Graphics.DrawProceduralNow(MeshTopology.Lines, ); // this is probably the thing to do 
-        // or https://answers.unity.com/questions/1771313/how-to-build-a-line-drawing-method-called-in-updat.html
-
         var prevAmount = lineRenderer.positionCount;
+        if (prevAmount > maxLinesPerFrame) return;
         var newPos = new Vector3[prevAmount + 2];
         lineRenderer.GetPositions(newPos);
         lineRenderer.positionCount += 2;
