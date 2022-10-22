@@ -71,29 +71,38 @@ public class LiDAR : MonoBehaviour
 
     private void DefaultScan()
     {
-        if (scanType == ScanType.Circle)
-        {
-            CircleScan();
-        } else if (scanType == ScanType.Line)
-        {
-            LineScan();
-        } else if (scanType == ScanType.Square)
-        {
-            SquareScan();
-        }
-    }
-
-    private void SquareScan()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void LineScan()
-    {
-        // Store variables relating to camera view dir and pos
         var facingDir = mainCam.gameObject.transform.forward;
         var cameraPos = mainCam.transform.position;
         var cameraRay = (cameraPos + facingDir);
+        if (scanType == ScanType.Circle)
+        {
+            CircleScan(facingDir, cameraPos, cameraRay);
+        } else if (scanType == ScanType.Line)
+        {
+            LineScan(facingDir, cameraPos, cameraRay);
+        } else if (scanType == ScanType.Square)
+        {
+            SquareScan(facingDir, cameraPos, cameraRay);
+        }
+    }
+
+    private void SquareScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    {
+        // Calculate perpendicular angles to view direction to generate plane upon which points can be generated
+        var p = mainCam.transform.up;
+        var q = mainCam.transform.right;
+        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        Vector3[] pointsOnDisc = new Vector3[i_fireRate];
+        for (int i = 0; i < i_fireRate; i++)
+        {
+            pointsOnDisc[i] = GenRandPointSquare(p,q);
+        }
+        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
+        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
+    }
+
+    private void LineScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    {
         var right = mainCam.transform.right;
         
         int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
@@ -103,8 +112,23 @@ public class LiDAR : MonoBehaviour
             pointsOnLine[i] = right * Random.Range(-1f, 1f);
         }
         ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnLine);
-        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);  
-        
+        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);
+    }
+    
+    void CircleScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    {
+        // Calculate perpendicular angles to view direction to generate circle on which points can be created
+        var p = GetPerpendicular(facingDir);
+        var q = Vector3.Cross(facingDir.normalized, p);
+        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        Vector3[] pointsOnDisc = new Vector3[i_fireRate];
+        for (int i = 0; i < i_fireRate; i++)
+        {
+            pointsOnDisc[i] = GenRandPointDisc(p,q);
+        }
+
+        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
+        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
 
     IEnumerator SuperScan()
@@ -141,25 +165,7 @@ public class LiDAR : MonoBehaviour
         }
     }
 
-    void CircleScan()
-    {
-        // Store variables relating to camera view dir and pos
-        var facingDir = mainCam.gameObject.transform.forward;
-        var cameraPos = mainCam.transform.position;
-        var cameraRay = (cameraPos + facingDir);
-        // Calculate perpendicular angles to view direction to generate circle on which points can be created
-        var p = GetPerpendicular(facingDir);
-        var q = Vector3.Cross(facingDir.normalized, p);
-        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
-        Vector3[] pointsOnDisc = new Vector3[i_fireRate];
-        for (int i = 0; i < i_fireRate; i++)
-        {
-            pointsOnDisc[i] = GenRandPointDisc(p,q);
-        }
-
-        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
-        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
-    }
+    
 
     private ValueTuple<Vector3[],Vector4[],Vector3[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
@@ -200,14 +206,14 @@ public class LiDAR : MonoBehaviour
         var v = r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
         return v;
     }
-
-
-
-    private void DrawDebugRayShoot(Vector3 cameraRay, Vector3 endPoint)
+    private Vector3 GenRandPointSquare(Vector3 p, Vector3 q)
     {
-        Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
+        float x = Random.Range(-1f, 1f);
+        float y = Random.Range(-1f, 1f);
+        Vector3 vec = p * x + q * y;
+        return vec;
     }
-    
+
     private void DrawRayBetweenPoints(Vector3 cameraRay, Vector3 endPoint)
     {
         var prevAmount = lineRenderer.positionCount;
