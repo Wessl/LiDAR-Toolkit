@@ -218,6 +218,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 352087947}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &603795899 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+  m_PrefabInstance: {fileID: 1971388829}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &675234477 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 119242, guid: a9c76a0f31a399647af506139666869e, type: 3}
@@ -432,7 +437,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1047528404}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -654,7 +660,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   coneAngle: 30
-  fireRate: 100
+  squareScanSize: 0
+  fireRate: 1000
   superScanMinTime: 1
   superScanSqrtNum: 200
   lidarActivationKey: 323
@@ -665,7 +672,8 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   useLineRenderer: 1
   lineRenderer: {fileID: 963194229}
-  maxLinesPerFrame: 0
+  lineSpawnSource: {fileID: 1047528404}
+  maxLinesPerFrame: 100
   scanType: 0
 --- !u!114 &963194231
 MonoBehaviour:
@@ -807,6 +815,37 @@ Transform:
   - {fileID: 1373531227}
   m_Father: {fileID: 0}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1047528403
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1047528404}
+  m_Layer: 0
+  m_Name: ScannerSource
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1047528404
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047528403}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.4, y: -0.35, z: 0.958}
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_Children:
+  - {fileID: 603795899}
+  m_Father: {fileID: 963194228}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1177313516
 PrefabInstance:
@@ -1253,6 +1292,87 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1373531226}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1971388829
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 1047528404}
+    m_Modifications:
+    - target: {fileID: 1372612969503529720, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Layer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.0029
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.1675
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322090808, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322515728, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Layer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322515736, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Name
+      value: Hairdryer
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322515736, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Layer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322515738, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Layer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322515740, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Layer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3300510550322515742, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
+      propertyPath: m_Layer
+      value: 2
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 29ad3a69a2cfa1843b934d1e838eed29, type: 3}
 --- !u!1 &1971654872
 GameObject:
   m_ObjectHideFlags: 0

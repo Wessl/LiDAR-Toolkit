@@ -38,6 +38,7 @@ public class LiDAR : MonoBehaviour
     [Tooltip("Should lines be drawn between player and new point sources?")]
     public bool useLineRenderer;
     public LineRenderer lineRenderer;
+    public Transform lineSpawnSource;
     [SerializeField] private int maxLinesPerFrame;
     
     // public PlayerController playerControllerRef;
@@ -57,6 +58,7 @@ public class LiDAR : MonoBehaviour
         superScanWaitTime = 1 / (superScanSqrtNum / superScanMinTime);
         disabled = false;
         lineRenderer.positionCount = 2;
+        if (lineSpawnSource == null) lineSpawnSource = mainCam.transform;
     }
 
     // Update is called once per frame
@@ -181,7 +183,7 @@ public class LiDAR : MonoBehaviour
         foreach (var point in points)
         {
             RaycastHit hit;
-            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit))
+            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, 1000, LayerMask.GetMask("Default")))
             {
                 
                 if (drawPointsRef.overrideColor)
@@ -226,7 +228,7 @@ public class LiDAR : MonoBehaviour
         var newPos = new Vector3[prevAmount + 2];
         lineRenderer.GetPositions(newPos);
         lineRenderer.positionCount += 2;
-        newPos[prevAmount] = mainCam.transform.position + cameraRay; 
+        newPos[prevAmount] = lineSpawnSource.position; 
         newPos[prevAmount+1] = endPoint;
         lineRenderer.SetPositions(newPos);
     }
