@@ -74,6 +74,12 @@ public class LiDAR : MonoBehaviour
         {
             DefaultScan();
         }
+        
+        // temporary
+        var scrollDelta = Input.mouseScrollDelta.y;
+        coneAngle += scrollDelta;
+        if (coneAngle > 60) coneAngle = 60;
+        if (coneAngle < 0) coneAngle = 0;
     }
 
     private void DefaultScan()
