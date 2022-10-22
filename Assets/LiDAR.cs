@@ -11,7 +11,12 @@ public class LiDAR : MonoBehaviour
     private Camera mainCam;
     
     [Tooltip("The angle of the cone for the default scan")]
+    [Range(0,60)]
     public float coneAngle;
+
+    [Tooltip("The length and width of the square scan")]
+    [Range(0,1)]
+    public float squareScanSize;
     
     [Tooltip("The amount of points to create per second")]
     public float fireRate;
@@ -95,7 +100,7 @@ public class LiDAR : MonoBehaviour
         Vector3[] pointsOnDisc = new Vector3[i_fireRate];
         for (int i = 0; i < i_fireRate; i++)
         {
-            pointsOnDisc[i] = GenRandPointSquare(p,q);
+            pointsOnDisc[i] = GenRandPointSquare(p,q,squareScanSize);
         }
         ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
@@ -206,10 +211,10 @@ public class LiDAR : MonoBehaviour
         var v = r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
         return v;
     }
-    private Vector3 GenRandPointSquare(Vector3 p, Vector3 q)
+    private Vector3 GenRandPointSquare(Vector3 p, Vector3 q, float range)
     {
-        float x = Random.Range(-1f, 1f);
-        float y = Random.Range(-1f, 1f);
+        float x = Random.Range(-range, range);
+        float y = Random.Range(-range, range);
         Vector3 vec = p * x + q * y;
         return vec;
     }
