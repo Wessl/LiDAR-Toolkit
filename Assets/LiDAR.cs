@@ -57,7 +57,7 @@ public class LiDAR : MonoBehaviour
     void Update()
     {
         if (disabled) return;
-        lineRenderer.SetPositions(new Vector3[2]);    // Clear each frame
+        lineRenderer.positionCount = 0;    // Clear each frame
         if (Input.GetKeyDown(superScanKey))
         {
             StartCoroutine(SuperScan());
@@ -212,11 +212,14 @@ public class LiDAR : MonoBehaviour
         // Debug.DrawLine(mainCam.transform.position+cameraRay, endPoint, Color.red, 0.05f);
         // Graphics.DrawProceduralNow(MeshTopology.Lines, ); // this is probably the thing to do 
         // or https://answers.unity.com/questions/1771313/how-to-build-a-line-drawing-method-called-in-updat.html
-        
-        Vector3[] pos = new Vector3[2];
-        pos[0] = mainCam.transform.position + cameraRay; 
-        pos[1] = endPoint;
-        lineRenderer.SetPositions(pos);
+
+        var prevAmount = lineRenderer.positionCount;
+        var newPos = new Vector3[prevAmount + 2];
+        lineRenderer.GetPositions(newPos);
+        lineRenderer.positionCount += 2;
+        newPos[prevAmount] = mainCam.transform.position + cameraRay; 
+        newPos[prevAmount+1] = endPoint;
+        lineRenderer.SetPositions(newPos);
     }
 
     private Vector3 GetPerpendicular(Vector3 cameraRay)
