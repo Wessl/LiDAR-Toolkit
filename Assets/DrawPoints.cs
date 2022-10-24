@@ -36,11 +36,12 @@ public class DrawPoints : MonoBehaviour
     private bool _canStartRendering;
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
-    private int computeBufferCount = 1048576; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
+    private int computeBufferCount = 104857; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
+    private ComputeBuffer blankComputeBuffer = new ComputeBuffer(1, 1);
     
     
     // Mesh topology to render
@@ -91,11 +92,11 @@ public class DrawPoints : MonoBehaviour
     public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
     {
         var amount = pointPositions.Length;
+        _posBuffer.SetData (pointPositions, 0, _bufIndex % (computeBufferCount-amount), amount);
+        _colorBuffer.SetData(colors, 0, _bufIndex % (computeBufferCount-amount), amount);
+        
+        
         _bufIndex += amount;
-        _posBuffer.SetData (pointPositions, 0, _bufIndex % computeBufferCount, amount);
-        _colorBuffer.SetData(colors, 0, _bufIndex % computeBufferCount, amount);
-        // _material.SetBuffer ("posbuffer", _posBuffer);
-        // _material.SetBuffer("colorbuffer", _colorBuffer);
         _canStartRendering = true;
     }
     
@@ -160,5 +161,6 @@ public class DrawPoints : MonoBehaviour
     {
         _posBuffer.Release();
         _colorBuffer.Release();
+        blankComputeBuffer.Release();
     }
 }
