@@ -41,9 +41,8 @@ public class DrawPoints : MonoBehaviour
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
-    private ComputeBuffer blankComputeBuffer = new ComputeBuffer(1, 1);
-    
-    
+
+
     // Mesh topology to render
     private MeshTopology _meshTopology = MeshTopology.Points;
     private void Awake()
@@ -56,7 +55,7 @@ public class DrawPoints : MonoBehaviour
         SetUp();
         _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
         _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
-        
+
         _bufIndex = 0;
         mainCam = Camera.main;
         _canStartRendering = false;
@@ -94,8 +93,6 @@ public class DrawPoints : MonoBehaviour
         var amount = pointPositions.Length;
         _posBuffer.SetData (pointPositions, 0, _bufIndex % (computeBufferCount-amount), amount);
         _colorBuffer.SetData(colors, 0, _bufIndex % (computeBufferCount-amount), amount);
-        
-        
         _bufIndex += amount;
         _canStartRendering = true;
     }
@@ -133,16 +130,17 @@ public class DrawPoints : MonoBehaviour
         _material.SetVector("camerapos", mainCam.transform.position);
         _material.SetBuffer("posbuffer", _posBuffer);
         _material.SetBuffer("colorbuffer", _colorBuffer);
+        var count = Mathf.Min(_bufIndex, computeBufferCount);
         if (_pointType == PointType.PixelPoint)
         {
-            Graphics.DrawProceduralNow(MeshTopology.Points, _posBuffer.count, 1);
+            Graphics.DrawProceduralNow(MeshTopology.Points, count, 1);
         }
         else if (_pointType == PointType.CirclePoint)
         {
-            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, _bufIndex);
+            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, count);
         } else if (_pointType == PointType.MeshPoint)
         {
-            Graphics.DrawMeshInstancedProcedural(_pointMesh, 0, _material, bounds, _bufIndex,  null, ShadowCastingMode.Off, false);
+            Graphics.DrawMeshInstancedProcedural(_pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
         }
     }
 
@@ -161,6 +159,5 @@ public class DrawPoints : MonoBehaviour
     {
         _posBuffer.Release();
         _colorBuffer.Release();
-        blankComputeBuffer.Release();
     }
 }
