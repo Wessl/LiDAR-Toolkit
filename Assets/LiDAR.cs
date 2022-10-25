@@ -9,7 +9,10 @@ using Random = UnityEngine.Random;
 public class LiDAR : MonoBehaviour
 {
     private Camera mainCam;
-    
+
+    [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
+    public LayerMask layersToHit;
+
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
@@ -189,9 +192,8 @@ public class LiDAR : MonoBehaviour
         foreach (var point in points)
         {
             RaycastHit hit;
-            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, 1000, LayerMask.GetMask("Default")))
+            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, 1000, layersToHit))
             {
-                
                 if (drawPointsRef.overrideColor)
                 {
                     pointColors[i] = drawPointsRef.pointColor;

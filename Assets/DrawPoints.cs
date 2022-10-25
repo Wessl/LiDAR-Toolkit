@@ -36,7 +36,7 @@ public class DrawPoints : MonoBehaviour
     private bool _canStartRendering;
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
-    private int computeBufferCount = 104857; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
+    private int computeBufferCount = 1048576; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;

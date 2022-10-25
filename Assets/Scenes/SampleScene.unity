@@ -661,7 +661,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coneAngle: 30
   squareScanSize: 0
-  fireRate: 1000
+  fireRate: 9999
   superScanMinTime: 1
   superScanSqrtNum: 200
   lidarActivationKey: 323
@@ -707,14 +707,14 @@ MonoBehaviour:
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
-  _pointType: 1
-  _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  _pointType: 0
+  _pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.071
   overrideColor: 0
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 1
   farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
-  farPointDistance: 5
+  farPointDistance: 20
 --- !u!1 &988206181
 GameObject:
   m_ObjectHideFlags: 0
