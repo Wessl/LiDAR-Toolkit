@@ -21,7 +21,7 @@ public class DrawPoints : MonoBehaviour
     private Mesh _pointMesh;
     [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Size of spheres and meshes (Pixels are constant in size)")] 
     private float pointScale;
-
+    
     
     // Color overrides
     public bool overrideColor;
@@ -29,6 +29,8 @@ public class DrawPoints : MonoBehaviour
     public bool useColorGradient;
     public Color farPointColor;
     public float farPointDistance;
+    public bool fadePointsOverTime;
+    public float fadeTime;
     
     // Private global variables
     private Material _material;                     // The material reference built from the active shader
@@ -36,6 +38,7 @@ public class DrawPoints : MonoBehaviour
     private bool _canStartRendering;
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
+    private ComputeBuffer _timeBuffer;              // Used for time-based effects
     private int computeBufferCount = 1048576;       // 2^20. 3*4*1048576 = 12MB
     private int _strideVec3;
     private int _strideVec4;
@@ -46,12 +49,14 @@ public class DrawPoints : MonoBehaviour
     {
         _posBuffer?.Release();
         _colorBuffer?.Release();
+        _timeBuffer?.Release();
         _strideVec3 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
         _strideVec4 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector4));
         
         SetUp();
         _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
         _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
+        _timeBuffer = new ComputeBuffer(computeBufferCount, sizeof(float), ComputeBufferType.Default);
 
         _bufIndex = 0;
         mainCam = Camera.main;
@@ -84,9 +89,19 @@ public class DrawPoints : MonoBehaviour
 
     public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
     {
-        var amount = pointPositions.Length;
-        _posBuffer.SetData (pointPositions, 0, _bufIndex % (computeBufferCount-amount), amount);
-        _colorBuffer.SetData(colors, 0, _bufIndex % (computeBufferCount-amount), amount);
+        int amount = pointPositions.Length;
+        int bufferStartIndex = _bufIndex % (computeBufferCount - amount);
+        float[] timestamps = new float[amount];
+        
+        if (fadePointsOverTime)
+        {
+            for (int i = 0; i < amount; i++) timestamps[i] = Time.time;
+            _timeBuffer.SetData(timestamps, 0, bufferStartIndex, amount);
+        }
+        
+        _posBuffer.SetData (pointPositions, 0, bufferStartIndex, amount);
+        _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
+        
         _bufIndex += amount;
         _canStartRendering = true;
     }
@@ -122,8 +137,10 @@ public class DrawPoints : MonoBehaviour
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
         _material.SetPass(0);
         _material.SetVector("camerapos", mainCam.transform.position);
+        _material.SetFloat("fadeTime", fadeTime);
         _material.SetBuffer("posbuffer", _posBuffer);
         _material.SetBuffer("colorbuffer", _colorBuffer);
+        _material.SetBuffer("timebuffer", _timeBuffer);
         var count = Mathf.Min(_bufIndex, computeBufferCount);
         if (_pointType == PointType.PixelPoint)
         {
@@ -153,5 +170,6 @@ public class DrawPoints : MonoBehaviour
     {
         _posBuffer.Release();
         _colorBuffer.Release();
+        _timeBuffer.Release();
     }
 }
