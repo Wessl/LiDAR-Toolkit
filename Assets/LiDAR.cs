@@ -4,62 +4,67 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+/*
+ * This class handles user input, firing raycasts into space, and decides where points should be drawn in space. 
+ */
+
 [RequireComponent(typeof(DrawPoints))]
 [RequireComponent(typeof(LineRenderer))]
 public class LiDAR : MonoBehaviour
 {
+    // Private variables 
+    private List<RaycastHit> hits = new List<RaycastHit>();
     private Camera mainCam;
-
+    
+    // General
+    [Tooltip("Reference to the DrawPoints object. Necessary since it handles drawing points")]
+    public DrawPoints drawPointsRef;
     [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
     public LayerMask layersToHit;
-
+    
+    [Header("Regular scan")]    
+    public ScanType scanType;
+    public KeyCode lidarActivationKey = KeyCode.Mouse0;
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
-
     [Tooltip("The length and width of the square scan")]
     [Range(0,1)]
     public float squareScanSize;
-    
     [Tooltip("The amount of points to create per second")]
     public float fireRate;
     
-    [Tooltip("The minimum amount of time to complete a super scan")]
-    public float superScanMinTime = 1f;
+    [Header("Super scan")]
+    public KeyCode superScanKey = KeyCode.Y;
     [Tooltip("The number of points in one dimension created by the super scan. E.g. 200, will create 200x200 in the super scan area")]
     public int superScanSqrtNum = 200;
-    public KeyCode lidarActivationKey = KeyCode.Mouse0;
-    public KeyCode superScanKey = KeyCode.Y;
-    public DrawPoints drawPointsRef;
+    [Tooltip("The minimum amount of time to complete a super scan")]
+    public float superScanMinTime = 1f;
     private float superScanWaitTime;
+    
     [Header("Audio")] 
     public AudioClip defaultScanSFX;
     public AudioClip superScanSFX;
     public AudioSource audioSource;
 
-    private List<RaycastHit> hits = new List<RaycastHit>();
+    [Header("Line Renderer")]
     [Tooltip("Should lines be drawn between player and new point sources?")]
     public bool useLineRenderer;
     public LineRenderer lineRenderer;
     public Transform lineSpawnSource;
-    [SerializeField] private int maxLinesPerFrame;
+    public int maxLinesPerFrame;
     
-    // public PlayerController playerControllerRef;
-    // public MouseLook mouseLookRef;
-    private bool disabled;
     
     public enum ScanType
     {
         Circle, Line, Square
     }
-    public ScanType scanType;
     
     // Start is called before the first frame update
     void Start()
     {
         mainCam = Camera.main;
         superScanWaitTime = 1 / (superScanSqrtNum / superScanMinTime);
-        disabled = false;
         lineRenderer.positionCount = 2;
         if (lineSpawnSource == null) lineSpawnSource = mainCam.transform;
     }
@@ -67,7 +72,6 @@ public class LiDAR : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (disabled) return;
         lineRenderer.positionCount = 0;    // Clear each frame
         if (Input.GetKeyDown(superScanKey))
         {
@@ -131,7 +135,7 @@ public class LiDAR : MonoBehaviour
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);
     }
     
-    void CircleScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    private void CircleScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
@@ -147,7 +151,7 @@ public class LiDAR : MonoBehaviour
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
 
-    IEnumerator SuperScan()
+    private IEnumerator SuperScan()
     {
         // lmao how the fuck did I figure all this out
         float aspect = mainCam.aspect;
@@ -271,50 +275,7 @@ public class LiDAR : MonoBehaviour
         perp[midIndex] = -max;
         return perp.normalized;
     }
-    
-    /*
-     * Currently not used but I don't want to delete it
-     */
-    private Vector3[] TagsToColors(string[] tags)
-    {
-        Vector3[] colors = new Vector3[tags.Length];
-        int i = 0;
-        foreach (var tag in tags)
-        {
-            switch (tag)
-            {
-                case "Untagged":
-                    colors[i++] = new Vector3(1, 1, 0);
-                    break;
-                case "Interactible":
-                    colors[i++] = new Vector3(0, 1, 0);
-                    break;
-                case "Goal":
-                    colors[i++] = new Vector3(0.698f, 0.4f, 1f);
-                    break;
-                case "Enemy":
-                    colors[i++] = new Vector3(0.733f, 0.031f, 0.031f);
-                    break;
-                case "Wood":
-                    colors[i++] = new Vector3(165/255f, 42/255f, 42/255f);
-                    break;
-                case "WashitsuWall":
-                    colors[i++] = new Vector3(228 / 255f, 186 / 255f, 65 / 255f);
-                    break;
-                case "Tatami":
-                    colors[i++] = new Vector3(68/255f, 48/255f, 24/255f);
-                    break;
-                case "Kanji":
-                    colors[i++] = new Vector3(0f, 0f, 0);
-                    break;
-                default:
-                    colors[i++] = new Vector3(0.5f,0.4f,0.3f);
-                    break;
-            }
-        }
-        return colors;
-    }
-    
+
     private void DrawDebug(Vector3 cameraRay, Vector3 perpendicular, Vector3 q, Vector3[] pointOnDisc)
     {
         Debug.DrawLine(mainCam.transform.position, cameraRay, Color.green, 20);

@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 352087951}
   - component: {fileID: 352087950}
   - component: {fileID: 352087949}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -150,7 +150,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 352087947}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.049, z: 0.189}
+  m_LocalPosition: {x: 0.15, y: 0.1176, z: 0.189}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children: []
   m_Father: {fileID: 988206185}
@@ -659,8 +659,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88fdc214ffec26e43a5fc12f0fbf7976, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  layersToHit:
+    serializedVersion: 2
+    m_Bits: 1
   coneAngle: 30
-  squareScanSize: 0
+  squareScanSize: 0.495
   fireRate: 9999
   superScanMinTime: 1
   superScanSqrtNum: 200
@@ -674,7 +677,7 @@ MonoBehaviour:
   lineRenderer: {fileID: 963194229}
   lineSpawnSource: {fileID: 1047528404}
   maxLinesPerFrame: 100
-  scanType: 0
+  scanType: 2
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -707,9 +710,9 @@ MonoBehaviour:
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
-  _pointType: 0
-  _pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  pointScale: 0.071
+  _pointType: 2
+  _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  pointScale: 0.03
   overrideColor: 0
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 1
