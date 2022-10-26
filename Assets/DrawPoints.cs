@@ -4,20 +4,22 @@ using UnityEngine.Rendering;
 
 public class DrawPoints : MonoBehaviour
 {
-    // Does this really need to be an object? Ah well
+    [Header("Shader File References")]
     public Shader pointShader;
     public Shader circleShader;
     public Shader sphereShader;
-    // Choose points (pixel size) or circles (constant world size)
+    
+    // Choose points (pixel size), circles (billboarded, world size), or meshes (3D, world size)
     private enum PointType
     {
         PixelPoint, CirclePoint, MeshPoint
     }
+    [Header("Point type options")]
     [SerializeField] 
     private PointType _pointType;
-    [SerializeField][Tooltip("E.g. sphere or cube mesh")] 
+    [SerializeField][Tooltip("E.g. sphere or cube mesh - don't use something with too many vertices")] 
     private Mesh _pointMesh;
-    [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Only applies to spheres atm")] 
+    [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Size of spheres and meshes (Pixels are constant in size)")] 
     private float pointScale;
 
     
@@ -28,23 +30,18 @@ public class DrawPoints : MonoBehaviour
     public Color farPointColor;
     public float farPointDistance;
     
-    private Material _material;
-    private int _bufIndex;
-    private bool decreaseColorOverTime = false;
-    private float colorDecreaseTimer = 0;
-
+    // Private global variables
+    private Material _material;                     // The material reference built from the active shader
+    private int _bufIndex;                          // The index of points to create, always the latest one
     private bool _canStartRendering;
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
-    private int computeBufferCount = 1048576; // 2^20. 3*4*1048576 = 12MB which is... nothing. still, buffers are seemingly routed through l2 cache which is smaller than 12MB, sometimes.. (actually idk, would love to find out)§
+    private int computeBufferCount = 1048576;       // 2^20. 3*4*1048576 = 12MB
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
 
-
-    // Mesh topology to render
-    private MeshTopology _meshTopology = MeshTopology.Points;
     private void Awake()
     {
         _posBuffer?.Release();
@@ -63,17 +60,14 @@ public class DrawPoints : MonoBehaviour
 
     public void SetUp()
     {
-        
         if (_pointType == PointType.PixelPoint)
         {
             _material = new Material(pointShader);
-            _meshTopology = MeshTopology.Points;
         }
 
         else if (_pointType == PointType.CirclePoint)
         {
             _material = new Material(circleShader);
-            _meshTopology = MeshTopology.Triangles;
             _material.SetFloat("_Scale", pointScale);
         }
         
@@ -100,7 +94,7 @@ public class DrawPoints : MonoBehaviour
 
     void Update()
     {
-        // 3D Spheres need to use Update() 
+        // DrawMeshInstancedProcedural needs to use Update() 
         if (_canStartRendering)
         {
             if (_pointType == PointType.MeshPoint)
