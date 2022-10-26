@@ -81,12 +81,22 @@ public class LiDAR : MonoBehaviour
         {
             DefaultScan();
         }
+
+        ScanSizeAreaUpdate(Input.mouseScrollDelta);
         
-        // temporary
-        var scrollDelta = Input.mouseScrollDelta.y;
+    }
+
+    private void ScanSizeAreaUpdate(Vector2 mouseScrollDelta)
+    {
+        var scrollDelta = mouseScrollDelta.y;
+        // Cone (for circle)
         coneAngle += scrollDelta;
         if (coneAngle > 60) coneAngle = 60;
         if (coneAngle < 0) coneAngle = 0;
+        // Square
+        squareScanSize += scrollDelta * 0.01f;  
+        if (squareScanSize > 1) squareScanSize = 1;
+        if (squareScanSize < 0) squareScanSize = 0;
     }
 
     private void DefaultScan()
