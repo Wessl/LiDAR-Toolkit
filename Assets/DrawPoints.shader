@@ -38,7 +38,11 @@ Shader "Draw Points"
  
             float4 PSMain(shaderdata ps) : SV_TARGET
             {
-                ps.color.rgb *= clamp((timebuffer[ps.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
+                if (fadeTime != 0)
+                {
+                    ps.color.rgb *= clamp((timebuffer[ps.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
+                }
+                
                 return ps.color;
             }
            

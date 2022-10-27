@@ -84,7 +84,8 @@ public class DrawPoints : MonoBehaviour
         }
         _material.SetColor("farcolor", farPointColor);
         _material.SetFloat("fardist", farPointDistance);
-        
+
+        if (!fadePointsOverTime) fadeTime = 0;   // fadeTime is used to control whether points are faded in the shadersz
     }
 
     public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
