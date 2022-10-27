@@ -5,6 +5,8 @@ Shader "Draw Circles"
         Pass
         {
             Cull Off
+            ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
             CGPROGRAM
             #pragma vertex VSMain
             #pragma fragment PSMain
@@ -12,6 +14,8 @@ Shader "Draw Circles"
  
             StructuredBuffer<float3> posbuffer;
             StructuredBuffer<float4> colorbuffer;    // not used atm
+            StructuredBuffer<float> timebuffer;
+            float fadeTime;
             float _Scale;
             float4 farcolor;
             float4 camerapos;
@@ -64,6 +68,8 @@ Shader "Draw Circles"
             {
                 float2 S = ps.uv*2.0-1.0;
                 if (dot(S.xy, S.xy) > 1.0) discard;
+                if (fadeTime != 0) ps.color.a *= clamp((timebuffer[ps.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
+                
                 return ps.color;
             }
             ENDCG
