@@ -57,7 +57,7 @@ Shader "Draw Circles"
                 mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
                 + float4(sign(u)-0.5, sign(v)-0.5, 0.0, 0.0)*2
                 * float4(_Scale, _Scale, 1.0, 1.0));
-                vs.color = lerp(colorbuffer[instance], farcolor, clamp((dist/fardist),0.0001,1));
+                
                 vs.vertex = UnityObjectToClipPos(float4(center*2.0, 1.0)) + pos2;
                 vs.instance = instance;
                 
@@ -68,6 +68,8 @@ Shader "Draw Circles"
             {
                 float2 S = ps.uv*2.0-1.0;
                 if (dot(S.xy, S.xy) > 1.0) discard;
+                ps.color.a = 1;
+                ps.color.rgb = lerp(colorbuffer[ps.instance], farcolor, clamp((dist/fardist),0.0,1.0));
                 if (fadeTime != 0) ps.color.a *= clamp((timebuffer[ps.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
                 
                 return ps.color;

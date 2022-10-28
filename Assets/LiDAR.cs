@@ -214,16 +214,38 @@ public class LiDAR : MonoBehaviour
                 }
                 else
                 {
-                    pointColors[i] = hit.collider.gameObject.GetComponent<MeshRenderer>().material.color;
+                    pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
                 }
 
-                normals[i] = hit.normal;
+                // normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
                 
                 if (useLineRenderer) DrawRayBetweenPoints(cameraRay, hit.point);
             }    
         }
         return new ValueTuple<Vector3[], Vector4[], Vector3[]>(pointsHit, pointColors, normals);
+    }
+
+    private Vector4 GetColliderRelatedMeshRenderMaterialColor(RaycastHit hit)
+    {
+        if (hit.collider.gameObject.GetComponent<MeshRenderer>())
+        {
+            return hit.collider.gameObject.GetComponent<MeshRenderer>().material.color;
+        }
+
+        // Maybe parent has mesh? :)
+        Transform parent = hit.transform.parent;
+        var mesh = parent.GetComponent<MeshRenderer>();
+        if (mesh) return mesh.material.color;
+        // Check siblings! 
+        var siblingMesh = parent.GetComponentsInChildren<MeshRenderer>();
+        if (siblingMesh[0]) return siblingMesh[0].material.color;
+        // Check children! 
+        var childMesh = hit.transform.GetComponentsInChildren<MeshRenderer>();
+        if (childMesh[0]) return childMesh[0].material.color;
+        
+        Debug.Log("Something fucky wucky happened man");
+        return Color.magenta;
     }
     
     private Vector3 GenRandPointDisc(Vector3 p, Vector3 q)
