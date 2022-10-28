@@ -51,7 +51,7 @@ Shader "Draw Circles"
                 vs.uv = float2(u,v);
                 float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
                 dist = distance(camerapos, center);
-
+                vs.color = lerp(colorbuffer[instance], farcolor, clamp((dist/fardist),0.0,1.0));
                 // billboard. why does this frankensteiny mess even work remotely
                 float4 pos2 = mul(UNITY_MATRIX_P, 
                 mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
@@ -69,7 +69,7 @@ Shader "Draw Circles"
                 float2 S = ps.uv*2.0-1.0;
                 if (dot(S.xy, S.xy) > 1.0) discard;
                 ps.color.a = 1;
-                ps.color.rgb = lerp(colorbuffer[ps.instance], farcolor, clamp((dist/fardist),0.0,1.0));
+                
                 if (fadeTime != 0) ps.color.a *= clamp((timebuffer[ps.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
                 
                 return ps.color;
