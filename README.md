@@ -7,10 +7,10 @@ Toolkit for making LiDAR-like gameplay in Unity
 * Up to hundreds of millions of points
 * Distance based gradient
 * Whole-screen auto scan
-* variable point size
-* variable scan line amount
-* time-based fade out
-* variable point creation rate
+* Variable point size
+* Variable scan line amount
+* Time-based fade out
+* Variable point creation rate
 
 (This image isn't mine but it looks cool and you could make something like this with this toolkit 😄)
 ![alt-text](https://geospatialmedia.s3.amazonaws.com/wp-content/uploads/2019/01/Wired1.jpg)
