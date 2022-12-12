@@ -31,5 +31,6 @@ print("Successfully uploaded build to file.io. Resulting link found below:")
 print(res["link"])
 
 # remove the created zip file
+data["file"].close()
 os.remove(output_filename_complete)
 
