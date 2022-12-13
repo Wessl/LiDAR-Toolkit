@@ -56,7 +56,8 @@ public class JenkinsBuild
         //   +4: Development (BuildOptions) https://docs.unity3d.com/2020.3/Documentation/ScriptReference/BuildOptions.html
         string[] args = System.Environment.GetCommandLineArgs();
         var execMethodArgPos = -1;
-        bool allArgsFound = false;
+        bool allNecessaryArgsFound = false;
+        bool allOptionalArgsFound = false;
         for (int i = 0; i < args.Length; i++)
         {
             if (args[i] == "-executeMethod")
@@ -74,19 +75,21 @@ public class JenkinsBuild
                 returnValue.targetDir = args[i];
                 if (!returnValue.targetDir.EndsWith(System.IO.Path.DirectorySeparatorChar + ""))
                     returnValue.targetDir += System.IO.Path.DirectorySeparatorChar;
-
+                allNecessaryArgsFound = true;
             }
 
             if (realPos == 2)
             {
                 returnValue.buildOptions = args[i];
-                allArgsFound = true;
+                allOptionalArgsFound = true;
 
             }
         }
 
-        if (!allArgsFound)
-            System.Console.WriteLine("[JenkinsBuild] Incorrect Parameters for -executeMethod Format: -executeMethod JenkinsBuild.BuildWindows64 <app name> <output dir> <Unity BuildOptions>");
+        if (!allNecessaryArgsFound)
+            System.Console.WriteLine("[JenkinsBuild] Incorrect Parameters for -executeMethod Format: -executeMethod JenkinsBuild.BuildWindows64 <app name> <output dir>");
+        if (!allOptionalArgsFound)
+            System.Console.WriteLine("[JenkinsBuild] BuildOptions parameter not supplied as argument, defaulting to 'None'. Complete format: Format: -executeMethod JenkinsBuild.BuildWindows64 <app name> <output dir> <BuildOptions>");
 
         return returnValue;
     }
