@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,13 +8,12 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEditor.Build.Reporting;
 
-// ------------------------------------------------------------------------
 // https://docs.unity3d.com/Manual/CommandLineArguments.html
-// ------------------------------------------------------------------------
 public class JenkinsBuild
 {
 
     static string[] EnabledScenes = FindEnabledEditorScenes();
+    static BuildOptions buildOption;
 
     // called from Jenkins
     public static void BuildMacOS()
@@ -21,7 +21,8 @@ public class JenkinsBuild
         var args = FindArgs();
 
         string fullPathAndName = args.targetDir + args.appName + ".app";
-        BuildProject(EnabledScenes, fullPathAndName, BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX, BuildOptions.None);
+        Enum.TryParse<BuildOptions>(args.buildOptions, out buildOption);
+        BuildProject(EnabledScenes, fullPathAndName, BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX, buildOption);
     }
 
     // called from Jenkins
@@ -30,7 +31,8 @@ public class JenkinsBuild
         var args = FindArgs();
 
         string fullPathAndName = args.targetDir + args.appName + ".exe";
-        BuildProject(EnabledScenes, fullPathAndName, BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64, BuildOptions.None);
+        Enum.TryParse<BuildOptions>(args.buildOptions, out buildOption);
+        BuildProject(EnabledScenes, fullPathAndName, BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64, buildOption);
     }
 
     // called from Jenkins
@@ -39,7 +41,8 @@ public class JenkinsBuild
         var args = FindArgs();
 
         string fullPathAndName = args.targetDir + args.appName;
-        BuildProject(EnabledScenes, fullPathAndName, BuildTargetGroup.Standalone, BuildTarget.StandaloneLinux64, BuildOptions.None);
+        Enum.TryParse<BuildOptions>(args.buildOptions, out buildOption);
+        BuildProject(EnabledScenes, fullPathAndName, BuildTargetGroup.Standalone, BuildTarget.StandaloneLinux64, buildOption);
     }
 
     private static Args FindArgs()
@@ -50,6 +53,7 @@ public class JenkinsBuild
         //   +1: JenkinsBuild.BuildMacOS
         //   +2: FindTheGnome
         //   +3: D:\Jenkins\Builds\Find the Gnome\47\output
+        //   +4: Development (BuildOptions) https://docs.unity3d.com/2020.3/Documentation/ScriptReference/BuildOptions.html
         string[] args = System.Environment.GetCommandLineArgs();
         var execMethodArgPos = -1;
         bool allArgsFound = false;
@@ -71,12 +75,18 @@ public class JenkinsBuild
                 if (!returnValue.targetDir.EndsWith(System.IO.Path.DirectorySeparatorChar + ""))
                     returnValue.targetDir += System.IO.Path.DirectorySeparatorChar;
 
+            }
+
+            if (realPos == 2)
+            {
+                returnValue.buildOptions = args[i];
                 allArgsFound = true;
+
             }
         }
 
         if (!allArgsFound)
-            System.Console.WriteLine("[JenkinsBuild] Incorrect Parameters for -executeMethod Format: -executeMethod JenkinsBuild.BuildWindows64 <app name> <output dir>");
+            System.Console.WriteLine("[JenkinsBuild] Incorrect Parameters for -executeMethod Format: -executeMethod JenkinsBuild.BuildWindows64 <app name> <output dir> <Unity BuildOptions>");
 
         return returnValue;
     }
@@ -127,5 +137,6 @@ public class JenkinsBuild
     {
         public string appName = "AppName";
         public string targetDir = "~/Desktop";
+        public string buildOptions = "None";
     }
 }
