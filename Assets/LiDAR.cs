@@ -12,15 +12,17 @@ using Random = UnityEngine.Random;
 [RequireComponent(typeof(LineRenderer))]
 public class LiDAR : MonoBehaviour
 {
-    // Private variables 
+    // Private variables, cached
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Camera mainCam;
+    private float discRMax;
     
     // General
     [Tooltip("Reference to the DrawPoints object. Necessary since it handles drawing points")]
     public DrawPoints drawPointsRef;
     [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
     public LayerMask layersToHit;
+    public int lidarRange;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
     
     [Header("Regular scan")]    
     public ScanType scanType;
@@ -206,7 +208,7 @@ public class LiDAR : MonoBehaviour
         foreach (var point in points)
         {
             RaycastHit hit;
-            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, 1000, layersToHit))
+            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, lidarRange, layersToHit))
             {
                 if (drawPointsRef.overrideColor)
                 {
@@ -228,12 +230,10 @@ public class LiDAR : MonoBehaviour
 
     private Vector4 GetColliderRelatedMeshRenderMaterialColor(RaycastHit hit)
     {
-        if (hit.collider.gameObject.GetComponent<MeshRenderer>())
-        {
-            return hit.collider.gameObject.GetComponent<MeshRenderer>().material.color;
-        }
-
-        // Maybe parent has mesh? :)
+        var baseMeshRenderer = hit.collider.gameObject.GetComponent<MeshRenderer>();
+        if (baseMeshRenderer) return baseMeshRenderer.material.color;
+        
+        // It's possible either the parent, siblings, or descendants have color values. Expensive, but maybe necessary? Also we're returning as soon as something is found. 
         Transform parent = hit.transform.parent;
         var mesh = parent.GetComponent<MeshRenderer>();
         if (mesh) return mesh.material.color;
@@ -251,11 +251,10 @@ public class LiDAR : MonoBehaviour
     private Vector3 GenRandPointDisc(Vector3 p, Vector3 q)
     {
         // Generate random point in the PQ plane disc - actually makes sense if u think about it, a pretty simple alg
-        var rmax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
         var theta = Random.Range(0f, 2 * Mathf.PI);
-        var r = rmax * Mathf.Sqrt(Random.Range(0f, 1f));
-        var v = r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
-        return v;
+        var r = discRMax * Mathf.Sqrt(Random.Range(0f, 1f));    // If you don't take the square root the points all end up in the middle. Uses about 0.25 ms/frame, probably worth it as a tradeoff. 
+        return r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
+
     }
     private Vector3 GenRandPointSquare(Vector3 p, Vector3 q, float range)
     {
@@ -306,6 +305,11 @@ public class LiDAR : MonoBehaviour
         perp[axisMax] = cameraRay[midIndex];
         perp[midIndex] = -max;
         return perp.normalized;
+    }
+
+    private void OnValidate()
+    {
+        discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
     }
 
     private void DrawDebug(Vector3 cameraRay, Vector3 perpendicular, Vector3 q, Vector3[] pointOnDisc)

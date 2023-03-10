@@ -1,2 +1,4 @@
-// circles are cool and all... but i just realized I probably want spheres lol. otherwise i have to rotate them which is ass
-also tell przemyslaw that it still doesnt work
+investigate possibility of using burst to parallelize point spawning for optimization
+checkrayintersections is the most expensive rn: and its because of GetColliderRelatedMeshRenderMaterialColor
+refactor so that not all fields in lidar.cs are public??+
+maybe normals could be used in some fun way. 
