@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class DrawPoints : MonoBehaviour
 {
@@ -44,6 +45,9 @@ public class DrawPoints : MonoBehaviour
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
+
+    // Debug
+    [SerializeField] private Text debugText;
 
     private void Awake()
     {
@@ -105,6 +109,8 @@ public class DrawPoints : MonoBehaviour
         
         _bufIndex += amount;
         _canStartRendering = true;
+        // Debug
+        debugText.text = "Points: " + _bufIndex;
     }
     
 
