@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
@@ -59,7 +60,7 @@ public class DrawPoints : MonoBehaviour
         _strideVec3 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
         _strideVec4 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector4));
         
-        SetUp();
+        SetUpMaterials();
         _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
         _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
         _timeBuffer = new ComputeBuffer(computeBufferCount, sizeof(float), ComputeBufferType.Default);
@@ -67,9 +68,10 @@ public class DrawPoints : MonoBehaviour
         _bufIndex = 0;
         mainCam = Camera.main;
         _canStartRendering = false;
+        RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
     }
 
-    public void SetUp()
+    public void SetUpMaterials()
     {
         if (_pointType == PointType.PixelPoint)
         {
@@ -84,7 +86,7 @@ public class DrawPoints : MonoBehaviour
         
         else if (_pointType == PointType.MeshPoint)
         {
-            if (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset)
+            if (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset || GraphicsSettings.renderPipelineAsset is HDRenderPipelineAsset)
             {
                 _material = new Material(meshShaderURP);
             }
@@ -122,7 +124,7 @@ public class DrawPoints : MonoBehaviour
         // debugText.text = "Points: " + _bufIndex;
     }
     
-
+    
     void Update()
     {
         // DrawMeshInstancedProcedural needs to use Update() 
@@ -134,10 +136,23 @@ public class DrawPoints : MonoBehaviour
             }
         }
     }
+    
+    // For HDRP and URP
+    void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
+    {
+        Debug.Log("OnEndcameraRendering");
+        RenderCirclesAndPoints();
+    }
 
+    // For BRP
     void OnRenderObject()
     {
-        // Circles and Points use OnRenderObject
+        Debug.Log("OnRenderObject");
+        RenderCirclesAndPoints();
+    }
+
+    private void RenderCirclesAndPoints()
+    {
         if (_canStartRendering)
         {
             if (_pointType != PointType.MeshPoint)
@@ -150,6 +165,7 @@ public class DrawPoints : MonoBehaviour
 
     public void RenderPointsNow()
     {
+        Debug.Log("rendering points now");
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
         _material.SetPass(0);
         _material.SetVector("camerapos", mainCam.transform.position);
@@ -174,7 +190,7 @@ public class DrawPoints : MonoBehaviour
     public void OnValidate()
     {
         // Called whenever values in the inspector are changed
-        SetUp();
+        SetUpMaterials();
     }
 
     public void ClearAllPoints()
@@ -187,5 +203,6 @@ public class DrawPoints : MonoBehaviour
         _posBuffer.Release();
         _colorBuffer.Release();
         _timeBuffer.Release();
+        RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
     }
 }

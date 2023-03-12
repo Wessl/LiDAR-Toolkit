@@ -22,7 +22,7 @@ public class LiDAR : MonoBehaviour
     public DrawPoints drawPointsRef;
     [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
     public LayerMask layersToHit;
-    public int lidarRange;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
+    public int lidarRange = 100;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
     
     [Header("Regular scan")]    
     public ScanType scanType;
@@ -99,6 +99,7 @@ public class LiDAR : MonoBehaviour
         squareScanSize += scrollDelta * 0.01f;  
         if (squareScanSize > 1) squareScanSize = 1;
         if (squareScanSize < 0) squareScanSize = 0;
+        OnValidate();
     }
 
     private void DefaultScan()

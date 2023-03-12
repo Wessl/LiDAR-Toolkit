@@ -7,8 +7,11 @@ check what has to be done in order to publish someting on the unity asset store,
 more optimization!!! 
 think about if the current presentation with just inspector fields is really ideal?
 learn more about gpu stuff so we can optimize that stuff too
+make the startpoint of the lines always be in the same place relative to camera so it doesnt look like its floating around
+spread out the super scan lines line renderer thng
+hdrp is not working so well. i mean, mesh points work, but not points or circles. opposite problem from before xd lmao. shows up in scene view but not game view
 
-CONTINUE WITH THE DRAWSPHERES SHADER!!
+I need to make materials for each type ._.
 
 2020.3 Check
 2019 -
@@ -16,4 +19,5 @@ CONTINUE WITH THE DRAWSPHERES SHADER!!
 2022 -
 Built in RP Check
 URP     - 
-HDRP    - 
+HDRP    - Check
+

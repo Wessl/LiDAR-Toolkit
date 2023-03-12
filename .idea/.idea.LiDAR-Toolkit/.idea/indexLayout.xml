@@ -10,6 +10,8 @@
       <Path>Library/PackageCache/com.unity.ide.vscode@1.2.4</Path>
       <Path>Library/PackageCache/com.unity.mathematics@1.1.0</Path>
       <Path>Library/PackageCache/com.unity.render-pipelines.core@10.8.1</Path>
+      <Path>Library/PackageCache/com.unity.render-pipelines.high-definition-config@10.8.1</Path>
+      <Path>Library/PackageCache/com.unity.render-pipelines.high-definition@10.8.1</Path>
       <Path>Library/PackageCache/com.unity.render-pipelines.universal@10.8.1</Path>
       <Path>Library/PackageCache/com.unity.searcher@4.3.2</Path>
       <Path>Library/PackageCache/com.unity.services.core@1.0.1</Path>
@@ -17,6 +19,7 @@
       <Path>Library/PackageCache/com.unity.test-framework@1.1.29</Path>
       <Path>Library/PackageCache/com.unity.textmeshpro@3.0.6</Path>
       <Path>Library/PackageCache/com.unity.timeline@1.4.8</Path>
+      <Path>Library/PackageCache/com.unity.visualeffectgraph@10.8.1</Path>
       <Path>Packages</Path>
       <Path>ProjectSettings</Path>
     </explicitIncludes>
