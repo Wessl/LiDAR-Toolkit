@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 1258461}
   - component: {fileID: 1258460}
   - component: {fileID: 1258459}
+  - component: {fileID: 1258466}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -365,16 +366,17 @@ MonoBehaviour:
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
-  _pointType: 0
-  _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  pointScale: 0.025
+  _pointType: 2
+  _pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  pointScale: 0.029
   overrideColor: 0
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 1
   farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
-  farPointDistance: 100
+  farPointDistance: 30
   fadePointsOverTime: 0
   fadeTime: 0
+  debugText: {fileID: 0}
 --- !u!114 &1258461
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -391,11 +393,12 @@ MonoBehaviour:
   layersToHit:
     serializedVersion: 2
     m_Bits: 1
+  lidarRange: 100
   scanType: 0
   lidarActivationKey: 323
   coneAngle: 30
   squareScanSize: 0.495
-  fireRate: 99999
+  fireRate: 50000
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -489,6 +492,39 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1258466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1258458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
 --- !u!1001 &6648772
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -110,7 +110,7 @@ public class DrawPoints : MonoBehaviour
         _bufIndex += amount;
         _canStartRendering = true;
         // Debug
-        debugText.text = "Points: " + _bufIndex;
+        // debugText.text = "Points: " + _bufIndex;
     }
     
 

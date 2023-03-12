@@ -154,7 +154,7 @@ public class LiDAR : MonoBehaviour
         var q = Vector3.Cross(facingDir.normalized, p);
         int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
         Vector3[] pointsOnDisc = new Vector3[i_fireRate];
-        for (int i = 0; i < i_fireRate; i++)
+        for (int i = 0; i < i_fireRate; i++) // this is so burstable omg
         {
             pointsOnDisc[i] = GenRandPointDisc(p,q);
         }
@@ -231,7 +231,7 @@ public class LiDAR : MonoBehaviour
     private Vector4 GetColliderRelatedMeshRenderMaterialColor(RaycastHit hit)
     {
         var baseMeshRenderer = hit.collider.gameObject.GetComponent<MeshRenderer>();
-        if (baseMeshRenderer) return baseMeshRenderer.material.color;
+        if (baseMeshRenderer != null && baseMeshRenderer.material != null) return baseMeshRenderer.material.color;
         
         // It's possible either the parent, siblings, or descendants have color values. Expensive, but maybe necessary? Also we're returning as soon as something is found. 
         Transform parent = hit.transform.parent;
@@ -279,6 +279,7 @@ public class LiDAR : MonoBehaviour
     private Vector3 GetPerpendicular(Vector3 cameraRay)
     {
         /// https://stackoverflow.com/questions/39404576/cone-from-direction-vector
+        ///  ask chatgpt if this can be optimized lmao
         cameraRay.Normalize();
         float max = float.NegativeInfinity;
         float min = float.PositiveInfinity;
