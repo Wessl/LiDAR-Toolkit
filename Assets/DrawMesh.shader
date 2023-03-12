@@ -1,4 +1,4 @@
-Shader "Unlit/DrawSpheres" {
+Shader "Universal Render Pipeline/DrawMesh" {
 
 	Properties {
 		_Smoothness ("Smoothness", Range(0,1)) = 0.5
@@ -70,7 +70,6 @@ Shader "Unlit/DrawSpheres" {
 	        }
 
 			float4 frag(shaderdata f) : SV_Target{
-					return f.color;
 	                if (fadeTime != 0) f.color.a *= clamp((timebuffer[f.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
 	                return f.color;
 	        }

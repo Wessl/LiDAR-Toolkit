@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class DrawPoints : MonoBehaviour
@@ -8,7 +9,8 @@ public class DrawPoints : MonoBehaviour
     [Header("Shader File References")]
     public Shader pointShader;
     public Shader circleShader;
-    public Shader sphereShader;
+    public Shader meshShaderURP;
+    public Shader meshShaderBRP; 
     
     // Choose points (pixel size), circles (billboarded, world size), or meshes (3D, world size)
     private enum PointType
@@ -82,7 +84,14 @@ public class DrawPoints : MonoBehaviour
         
         else if (_pointType == PointType.MeshPoint)
         {
-            _material = new Material(sphereShader);
+            if (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset)
+            {
+                _material = new Material(meshShaderURP);
+            }
+            else
+            {
+                _material = new Material(meshShaderBRP);
+            }
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         }

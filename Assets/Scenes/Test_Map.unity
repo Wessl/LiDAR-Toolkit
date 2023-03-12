@@ -365,7 +365,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
-  sphereShader: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
+  meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
+  meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
   _pointType: 2
   _pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.029
