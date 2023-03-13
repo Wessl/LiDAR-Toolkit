@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class DrawPoints : MonoBehaviour
@@ -14,15 +15,16 @@ public class DrawPoints : MonoBehaviour
     public Shader meshShaderBRP; 
     
     // Choose points (pixel size), circles (billboarded, world size), or meshes (3D, world size)
-    private enum PointType
+    public enum PointType
     {
         PixelPoint, CirclePoint, MeshPoint
     }
+    [FormerlySerializedAs("_pointType")]
     [Header("Point type options")]
     [SerializeField] 
-    private PointType _pointType;
-    [SerializeField][Tooltip("E.g. sphere or cube mesh - don't use something with too many vertices")] 
-    private Mesh _pointMesh;
+    public PointType pointType;
+    [FormerlySerializedAs("_pointMesh")] [SerializeField][Tooltip("E.g. sphere or cube mesh - don't use something with too many vertices")] 
+    public Mesh pointMesh;
     [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Size of spheres and meshes (Pixels are constant in size)")] 
     private float pointScale;
     
@@ -73,18 +75,18 @@ public class DrawPoints : MonoBehaviour
 
     public void SetUpMaterials()
     {
-        if (_pointType == PointType.PixelPoint)
+        if (pointType == PointType.PixelPoint)
         {
             _material = new Material(pointShader);
         }
 
-        else if (_pointType == PointType.CirclePoint)
+        else if (pointType == PointType.CirclePoint)
         {
             _material = new Material(circleShader);
             _material.SetFloat("_Scale", pointScale);
         }
         
-        else if (_pointType == PointType.MeshPoint)
+        else if (pointType == PointType.MeshPoint)
         {
             if (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset || GraphicsSettings.renderPipelineAsset is HDRenderPipelineAsset)
             {
@@ -130,7 +132,7 @@ public class DrawPoints : MonoBehaviour
         // DrawMeshInstancedProcedural needs to use Update() 
         if (_canStartRendering)
         {
-            if (_pointType == PointType.MeshPoint)
+            if (pointType == PointType.MeshPoint)
             {
                 RenderPointsNow();
             }
@@ -155,7 +157,7 @@ public class DrawPoints : MonoBehaviour
     {
         if (_canStartRendering)
         {
-            if (_pointType != PointType.MeshPoint)
+            if (pointType != PointType.MeshPoint)
             {
                 RenderPointsNow();
             }
@@ -174,16 +176,16 @@ public class DrawPoints : MonoBehaviour
         _material.SetBuffer("colorbuffer", _colorBuffer);
         _material.SetBuffer("timebuffer", _timeBuffer);
         var count = Mathf.Min(_bufIndex, computeBufferCount);
-        if (_pointType == PointType.PixelPoint)
+        if (pointType == PointType.PixelPoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Points, count, 1);
         }
-        else if (_pointType == PointType.CirclePoint)
+        else if (pointType == PointType.CirclePoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, count);
-        } else if (_pointType == PointType.MeshPoint)
+        } else if (pointType == PointType.MeshPoint)
         {
-            Graphics.DrawMeshInstancedProcedural(_pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
+            Graphics.DrawMeshInstancedProcedural(pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
         }
     }
 

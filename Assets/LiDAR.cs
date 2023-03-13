@@ -74,7 +74,7 @@ public class LiDAR : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         lineRenderer.positionCount = 0;    // Clear each frame
         if (Input.GetKeyDown(superScanKey))
