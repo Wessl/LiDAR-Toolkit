@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ContentModelUserStore">
+  <component name="UserContentModel">
     <attachedFolders />
     <explicitIncludes>
       <Path>Library/PackageCache/com.unity.collab-proxy@1.15.12</Path>
@@ -32,10 +32,5 @@
       <Path>UserSettings</Path>
       <Path>obj</Path>
     </explicitExcludes>
-  </component>
-  <component name="UserContentModel">
-    <attachedFolders />
-    <explicitIncludes />
-    <explicitExcludes />
   </component>
 </project>

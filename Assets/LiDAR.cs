@@ -35,6 +35,8 @@ public class LiDAR : MonoBehaviour
     public float squareScanSize;
     [Tooltip("The amount of points to create per second")]
     public float fireRate;
+    [Tooltip("Will artificially limit the amount of new points created per second if FPS gets below this limit.")]
+    public int minimumAcceptableFPS = 20;
     
     [Header("Super scan")]
     public KeyCode superScanKey = KeyCode.Y;
@@ -153,7 +155,7 @@ public class LiDAR : MonoBehaviour
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
         var q = Vector3.Cross(facingDir.normalized, p);
-        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        int i_fireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
         Vector3[] pointsOnDisc = new Vector3[i_fireRate];
         for (int i = 0; i < i_fireRate; i++) // this is so burstable omg
         {

@@ -43,7 +43,7 @@ public class DrawPoints : MonoBehaviour
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
     private ComputeBuffer _timeBuffer;              // Used for time-based effects
-    private int computeBufferCount = 1048576;       // 2^20. 3*4*1048576 = 12MB
+    private int computeBufferCount = 16777216;       // 2^24. 3*4*16777216 = 200MB
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
