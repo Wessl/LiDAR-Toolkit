@@ -851,6 +851,7 @@ MonoBehaviour:
   coneAngle: 30
   squareScanSize: 0.495
   fireRate: 99999
+  minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -894,8 +895,8 @@ MonoBehaviour:
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  _pointType: 0
-  _pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  pointType: 0
+  pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.235
   overrideColor: 0
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
@@ -904,6 +905,7 @@ MonoBehaviour:
   farPointDistance: 20
   fadePointsOverTime: 0
   fadeTime: 0
+  hardVramLimitInMegabytes: 250
   debugText: {fileID: 557612534}
 --- !u!114 &963194233
 MonoBehaviour:

@@ -326,4 +326,5 @@ public class LiDAR : MonoBehaviour
             Debug.DrawLine(mainCam.transform.position, point + cameraRay, Color.yellow);
         }
     }
+    
 }

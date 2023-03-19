@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -45,11 +46,18 @@ public class DrawPoints : MonoBehaviour
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
     private ComputeBuffer _timeBuffer;              // Used for time-based effects
-    private int computeBufferCount = 16777216;       // 2^24. 3*4*16777216 = 200MB
+    [Tooltip("Change at your own risk. Can cause crashes if you allocate more memory than what is available to you." +
+             " Example: Three buffers are used to render points, so a limit of 576MB => 192MB per buffer, and 12 bytes" +
+             " is needed to store each point (4 bytes per float, 3 per Vector3) => 16MB of points ~16.8 million points rendered." +
+             "Also, note that just because you have a lot more VRAM than what you allocate here, rendering speed can still get quite low if you decide to use meshes instead of circles or pixels.")]
+    public float hardVramLimitInMegabytes = 576f;
+    private int computeBufferCount = 16777216;       // 2^24. 3*4*16777216 = 192MB
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
+    
+    private const int DANGEROUS_VIDEO_MEMORY_AMOUNT = 1500000;
 
     // Debug
     [SerializeField] private Text debugText;
@@ -63,6 +71,7 @@ public class DrawPoints : MonoBehaviour
         _strideVec4 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector4));
         
         SetUpMaterials();
+        CalculateCompBufferCount();
         _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
         _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
         _timeBuffer = new ComputeBuffer(computeBufferCount, sizeof(float), ComputeBufferType.Default);
@@ -71,6 +80,28 @@ public class DrawPoints : MonoBehaviour
         mainCam = Camera.main;
         _canStartRendering = false;
         RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
+    }
+    
+    
+
+    private void CalculateCompBufferCount()
+    {
+        // We're using three buffers in total. 12 bytes per index in each buffer. 1048576 is 1 megabyte.
+        double singleBufferLength = (hardVramLimitInMegabytes/(3*3*4)) * 1048576;
+        var exponent = (Math.Log(singleBufferLength, 2));
+        // if the thing we got is not a perfect two exponent, make it so. 
+        if (exponent % 1 == 0)
+        {
+            computeBufferCount = (int)singleBufferLength; // they picked a nice number :)
+        }
+        else
+        {
+            var roundedDownExponent = Math.Floor(exponent);
+            computeBufferCount = (int)Math.Pow(2, roundedDownExponent);
+            Debug.Log("The hard limit in VRAM you chose was automatically changed to " +
+                      computeBufferCount * 4 * 3 * 3 / (1048576));
+        }
+        
     }
 
     public void SetUpMaterials()
@@ -142,14 +173,12 @@ public class DrawPoints : MonoBehaviour
     // For HDRP and URP
     void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
     {
-        Debug.Log("OnEndcameraRendering");
         RenderCirclesAndPoints();
     }
 
     // For BRP
     void OnRenderObject()
     {
-        Debug.Log("OnRenderObject");
         RenderCirclesAndPoints();
     }
 
@@ -167,7 +196,6 @@ public class DrawPoints : MonoBehaviour
 
     public void RenderPointsNow()
     {
-        Debug.Log("rendering points now");
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
         _material.SetPass(0);
         _material.SetVector("camerapos", mainCam.transform.position);
@@ -206,5 +234,36 @@ public class DrawPoints : MonoBehaviour
         _colorBuffer.Release();
         _timeBuffer.Release();
         RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
+    }
+    
+        
+    void OnGUI()
+    {
+        // this is calculated wrong, think about how many megabytes are actually stored for each thing - you know we have floats and three of them per pos in the computebuffers. 
+        float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up. 
+        float videoMem = (_posBuffer.count + _colorBuffer.count + _timeBuffer.count) * 3 * 4 / 1048576f * ratioOfTotalUsed;
+        string text = videoMem + " MB of video memory used. " + FormatNumber(_bufIndex) + " points rendered.";
+        if (videoMem > DANGEROUS_VIDEO_MEMORY_AMOUNT)
+        {
+            text = videoMem + " MB of video memory used - Warning! Don't go higher unless you know what you're doing.";
+        } 
+        
+        GUI.Label(new Rect(10, 10, 500, 40), text);
+    }
+    
+    private static string FormatNumber(long num)
+    {
+        // Ensure number has max 3 significant digits (no rounding up can happen)
+        long i = (long)Math.Pow(10, (int)Math.Max(0, Math.Log10(num) - 2));
+        num = num / i * i;
+
+        if (num >= 1000000000)
+            return (num / 1000000000D).ToString("0.##") + "B";
+        if (num >= 1000000)
+            return (num / 1000000D).ToString("0.##") + "M";
+        if (num >= 1000)
+            return (num / 1000D).ToString("0.##") + "K";
+
+        return num.ToString("#,0");
     }
 }
