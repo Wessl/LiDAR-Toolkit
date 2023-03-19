@@ -8,7 +8,8 @@ more optimization!!!
 think about if the current presentation with just inspector fields is really ideal?
 learn more about gpu stuff so we can optimize that stuff too
 spread out the super scan lines line renderer thng
-hdrp is not working so well. i mean, mesh points work, but not points or circles. opposite problem from before xd lmao. shows up in scene view but not game view
+technically we could make a draw squares very easily by just modifying the shader code in drawCircles fragment shader
+circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 
 I need to make materials for each type ._.
 
@@ -17,6 +18,6 @@ I need to make materials for each type ._.
 2021 -
 2022 -
 Built in RP Check
-URP     - 
-HDRP    - Check
+URP     - Check
+HDRP    - Will probably not do since we need to rewrite some shader stuff, sounds like a pain. also why do you need hdrp in a point cloud game xd
 
