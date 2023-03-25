@@ -13,9 +13,11 @@ namespace Editor
             DrawPoints myTarget = (DrawPoints)target;
             
             // Default stuff, except color
-            DrawPropertiesExcluding(serializedObject, new string[]{ "pointColor", "overrideColor", "useColorGradient", "farPointColor", "farPointDistance" });
+            DrawPropertiesExcluding(serializedObject, new string[]{ "pointColor", "overrideColor", "useColorGradient", "farPointColor", "farPointDistance", "fadePointsOverTime", "fadeTime" });
 
-
+            myTarget.fadePointsOverTime = EditorGUILayout.BeginToggleGroup("Fade out points over time", myTarget.fadePointsOverTime);
+            myTarget.fadeTime = EditorGUILayout.FloatField("Fade out time", myTarget.fadeTime);
+            EditorGUILayout.EndToggleGroup();
             EditorGUILayout.Separator();
             if(GUILayout.Button("Clear All Points"))
             {

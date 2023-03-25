@@ -36,6 +36,7 @@ public class DrawPoints : MonoBehaviour
     public bool useColorGradient;
     public Color farPointColor;
     public float farPointDistance;
+    [Tooltip("Works best with Circle and Mesh points.")]
     public bool fadePointsOverTime;
     public float fadeTime;
     
