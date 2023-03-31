@@ -1,6 +1,10 @@
 using System;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class DrawPoints : MonoBehaviour
@@ -8,18 +12,20 @@ public class DrawPoints : MonoBehaviour
     [Header("Shader File References")]
     public Shader pointShader;
     public Shader circleShader;
-    public Shader sphereShader;
+    public Shader meshShaderURP;
+    public Shader meshShaderBRP; 
     
     // Choose points (pixel size), circles (billboarded, world size), or meshes (3D, world size)
-    private enum PointType
+    public enum PointType
     {
         PixelPoint, CirclePoint, MeshPoint
     }
+    [FormerlySerializedAs("_pointType")]
     [Header("Point type options")]
     [SerializeField] 
-    private PointType _pointType;
-    [SerializeField][Tooltip("E.g. sphere or cube mesh - don't use something with too many vertices")] 
-    private Mesh _pointMesh;
+    public PointType pointType;
+    [FormerlySerializedAs("_pointMesh")] [SerializeField][Tooltip("E.g. sphere or cube mesh - don't use something with too many vertices")] 
+    public Mesh pointMesh;
     [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Size of spheres and meshes (Pixels are constant in size)")] 
     private float pointScale;
     
@@ -30,6 +36,7 @@ public class DrawPoints : MonoBehaviour
     public bool useColorGradient;
     public Color farPointColor;
     public float farPointDistance;
+    [Tooltip("Works best with Circle and Mesh points.")]
     public bool fadePointsOverTime;
     public float fadeTime;
     
@@ -40,11 +47,18 @@ public class DrawPoints : MonoBehaviour
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
     private ComputeBuffer _timeBuffer;              // Used for time-based effects
-    private int computeBufferCount = 1048576;       // 2^20. 3*4*1048576 = 12MB
+    [Tooltip("Change at your own risk. Can cause crashes if you allocate more memory than what is available to you." +
+             " Example: Three buffers are used to render points, so a limit of 576MB => 192MB per buffer, and 12 bytes" +
+             " is needed to store each point (4 bytes per float, 3 per Vector3) => 16MB of points ~16.8 million points rendered." +
+             "Also, note that just because you have a lot more VRAM than what you allocate here, rendering speed can still get quite low if you decide to use meshes instead of circles or pixels.")]
+    public float hardVramLimitInMegabytes = 576f;
+    private int computeBufferCount = 16777216;       // 2^24. 3*4*16777216 = 192MB
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
+    
+    private const int DANGEROUS_VIDEO_MEMORY_AMOUNT = 1500000;
 
     // Debug
     [SerializeField] private Text debugText;
@@ -57,7 +71,8 @@ public class DrawPoints : MonoBehaviour
         _strideVec3 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
         _strideVec4 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector4));
         
-        SetUp();
+        SetUpMaterials();
+        CalculateCompBufferCount();
         _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
         _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
         _timeBuffer = new ComputeBuffer(computeBufferCount, sizeof(float), ComputeBufferType.Default);
@@ -65,24 +80,47 @@ public class DrawPoints : MonoBehaviour
         _bufIndex = 0;
         mainCam = Camera.main;
         _canStartRendering = false;
+        RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
+    }
+    
+    
+
+    private void CalculateCompBufferCount()
+    {
+        // We're using three buffers in total. 12 bytes per index in each buffer. 1048576 is 1 megabyte.
+        double singleBufferLength = (hardVramLimitInMegabytes/(3*3*4)) * 1048576;
+        var exponent = (Math.Log(singleBufferLength, 2));
+        // if the thing we got is not a perfect two exponent, make it so. 
+        if (exponent % 1 == 0)
+        {
+            computeBufferCount = (int)singleBufferLength; // they picked a nice number :)
+        }
+        else
+        {
+            var roundedDownExponent = Math.Floor(exponent);
+            computeBufferCount = (int)Math.Pow(2, roundedDownExponent);
+            Debug.Log("The hard limit in VRAM you chose was automatically changed to " +
+                      computeBufferCount * 4 * 3 * 3 / (1048576));
+        }
+        
     }
 
-    public void SetUp()
+    public void SetUpMaterials()
     {
-        if (_pointType == PointType.PixelPoint)
+        if (pointType == PointType.PixelPoint)
         {
             _material = new Material(pointShader);
         }
 
-        else if (_pointType == PointType.CirclePoint)
+        else if (pointType == PointType.CirclePoint)
         {
             _material = new Material(circleShader);
             _material.SetFloat("_Scale", pointScale);
         }
         
-        else if (_pointType == PointType.MeshPoint)
+        else if (pointType == PointType.MeshPoint)
         {
-            _material = new Material(sphereShader);
+            _material = GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset ? new Material(meshShaderURP) : new Material(meshShaderBRP);
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         }
@@ -110,28 +148,39 @@ public class DrawPoints : MonoBehaviour
         _bufIndex += amount;
         _canStartRendering = true;
         // Debug
-        debugText.text = "Points: " + _bufIndex;
+        // debugText.text = "Points: " + _bufIndex;
     }
     
-
+    
     void Update()
     {
         // DrawMeshInstancedProcedural needs to use Update() 
         if (_canStartRendering)
         {
-            if (_pointType == PointType.MeshPoint)
+            if (pointType == PointType.MeshPoint)
             {
                 RenderPointsNow();
             }
         }
     }
+    
+    // For HDRP and URP
+    void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
+    {
+        RenderCirclesAndPoints();
+    }
 
+    // For BRP
     void OnRenderObject()
     {
-        // Circles and Points use OnRenderObject
+        RenderCirclesAndPoints();
+    }
+
+    private void RenderCirclesAndPoints()
+    {
         if (_canStartRendering)
         {
-            if (_pointType != PointType.MeshPoint)
+            if (pointType != PointType.MeshPoint)
             {
                 RenderPointsNow();
             }
@@ -149,23 +198,23 @@ public class DrawPoints : MonoBehaviour
         _material.SetBuffer("colorbuffer", _colorBuffer);
         _material.SetBuffer("timebuffer", _timeBuffer);
         var count = Mathf.Min(_bufIndex, computeBufferCount);
-        if (_pointType == PointType.PixelPoint)
+        if (pointType == PointType.PixelPoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Points, count, 1);
         }
-        else if (_pointType == PointType.CirclePoint)
+        else if (pointType == PointType.CirclePoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, count);
-        } else if (_pointType == PointType.MeshPoint)
+        } else if (pointType == PointType.MeshPoint)
         {
-            Graphics.DrawMeshInstancedProcedural(_pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
+            Graphics.DrawMeshInstancedProcedural(pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
         }
     }
 
     public void OnValidate()
     {
         // Called whenever values in the inspector are changed
-        SetUp();
+        SetUpMaterials();
     }
 
     public void ClearAllPoints()
@@ -178,5 +227,37 @@ public class DrawPoints : MonoBehaviour
         _posBuffer.Release();
         _colorBuffer.Release();
         _timeBuffer.Release();
+        RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
+    }
+    
+        
+    void OnGUI()
+    {
+        // this is calculated wrong, think about how many megabytes are actually stored for each thing - you know we have floats and three of them per pos in the computebuffers. 
+        float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up. 
+        float videoMem = (_posBuffer.count + _colorBuffer.count + _timeBuffer.count) * 3 * 4 / 1048576f * ratioOfTotalUsed;
+        string text = videoMem + " MB of video memory used. " + FormatNumber(_bufIndex) + " points rendered.";
+        if (videoMem > DANGEROUS_VIDEO_MEMORY_AMOUNT)
+        {
+            text = videoMem + " MB of video memory used - Warning! Don't go higher unless you know what you're doing.";
+        } 
+        
+        GUI.Label(new Rect(10, 10, 500, 40), text);
+    }
+    
+    private static string FormatNumber(long num)
+    {
+        // Ensure number has max 3 significant digits (no rounding up can happen)
+        long i = (long)Math.Pow(10, (int)Math.Max(0, Math.Log10(num) - 2));
+        num = num / i * i;
+
+        if (num >= 1000000000)
+            return (num / 1000000000D).ToString("0.##") + "B";
+        if (num >= 1000000)
+            return (num / 1000000D).ToString("0.##") + "M";
+        if (num >= 1000)
+            return (num / 1000D).ToString("0.##") + "K";
+
+        return num.ToString("#,0");
     }
 }

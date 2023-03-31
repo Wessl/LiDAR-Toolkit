@@ -11,6 +11,7 @@ Shader "Draw Circles"
             #pragma vertex VSMain
             #pragma fragment PSMain
             #pragma target 5.0
+            #include "UnityCG.cginc"
  
             StructuredBuffer<float3> posbuffer;
             StructuredBuffer<float4> colorbuffer;    // not used atm
@@ -34,7 +35,8 @@ Shader "Draw Circles"
             {
                 return x - y * floor(x/y);
             }
- 
+
+            // not used anymore but it looks cool...!
             float3 hash(float p)
             {
                 float3 p3 = frac(p.xxx * float3(.1239, .1237, .2367));
@@ -46,15 +48,16 @@ Shader "Draw Circles"
             {
                 shaderdata vs;
                 float3 center = posbuffer[instance];
-                float u = sign(Mod(20.0, Mod(float(id), 6.0) + 2.0));
-                float v = sign(Mod(18.0, Mod(float(id), 6.0) + 2.0));
+                float internalMod = Mod(float(id), 6.0) + 2.0;
+                float u = sign(Mod(20.0, internalMod));
+                float v = sign(Mod(18.0, internalMod));
                 vs.uv = float2(u,v);
                 float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
                 dist = distance(camerapos, center);
-                vs.color = lerp(colorbuffer[instance], farcolor, clamp((dist/fardist),0.0,1.0));
+                vs.color = lerp(colorbuffer[instance], farcolor, (dist/fardist));
                 // billboard. why does this frankensteiny mess even work remotely
                 float4 pos2 = mul(UNITY_MATRIX_P, 
-                mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
+                float4(UnityObjectToViewPos(float3(0.0,0.0,0.0)),1.0)
                 + float4(sign(u)-0.5, sign(v)-0.5, 0.0, 0.0)*2
                 * float4(_Scale, _Scale, 1.0, 1.0));
                 
@@ -70,7 +73,7 @@ Shader "Draw Circles"
                 if (dot(S.xy, S.xy) > 1.0) discard;
                 ps.color.a = 1;
                 
-                if (fadeTime != 0) ps.color.a *= clamp((timebuffer[ps.instance]+fadeTime-_Time.y) * 1 / (fadeTime),0,1);
+                if (fadeTime != 0) ps.color.a *= max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
                 
                 return ps.color;
             }

@@ -1,4 +1,29 @@
-investigate possibility of using burst to parallelize point spawning for optimization
+investigate possibility of using burst to parallelize point spawning for optimization (might be the biggest possible upgrade)
 checkrayintersections is the most expensive rn: and its because of GetColliderRelatedMeshRenderMaterialColor
 refactor so that not all fields in lidar.cs are public??+
 maybe normals could be used in some fun way. 
+check what has to be done in order to publish someting on the unity asset store, like how do we package, how do we hide our precious source code, any legal/payment setup, etc...
+more optimization!!! 
+think about if the current presentation with just inspector fields is really ideal? yes, but:
+ should we have some kind of api where a game user can change settings? of course the person using this asset is gonna set it up, 
+ but what if they want to allow the gamer to change it dynamically in game? think about it .
+ 
+learn more about gpu stuff so we can optimize that stuff too
+spread out the super scan lines line renderer thng
+technically we could make a draw squares very easily by just modifying the shader code in drawCircles fragment shader
+circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
+pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.
+
+some kind of startup message on first play that says "hey this is how the thing works. we have 3 point types, use the correct shaders. these pipelines are supported". 
+if they are using hdrp have a popup saying "hey man, by the way, this shit is not supported. "
+
+I need to make materials for each type ._.
+
+2020.3 Check
+2019 - Check
+2021 - Check
+2022 - Check
+Built in RP Check
+URP     - Check
+HDRP    - Will probably not do since we need to rewrite some shader stuff, sounds like a pain. also why do you need hdrp in a point cloud game xd
+

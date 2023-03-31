@@ -22,7 +22,7 @@ public class LiDAR : MonoBehaviour
     public DrawPoints drawPointsRef;
     [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
     public LayerMask layersToHit;
-    public int lidarRange;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
+    public int lidarRange = 100;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
     
     [Header("Regular scan")]    
     public ScanType scanType;
@@ -35,6 +35,8 @@ public class LiDAR : MonoBehaviour
     public float squareScanSize;
     [Tooltip("The amount of points to create per second")]
     public float fireRate;
+    [Tooltip("Will artificially limit the amount of new points created per second if FPS gets below this limit.")]
+    public int minimumAcceptableFPS = 20;
     
     [Header("Super scan")]
     public KeyCode superScanKey = KeyCode.Y;
@@ -72,7 +74,7 @@ public class LiDAR : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         lineRenderer.positionCount = 0;    // Clear each frame
         if (Input.GetKeyDown(superScanKey))
@@ -99,6 +101,7 @@ public class LiDAR : MonoBehaviour
         squareScanSize += scrollDelta * 0.01f;  
         if (squareScanSize > 1) squareScanSize = 1;
         if (squareScanSize < 0) squareScanSize = 0;
+        OnValidate();
     }
 
     private void DefaultScan()
@@ -152,9 +155,9 @@ public class LiDAR : MonoBehaviour
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
         var q = Vector3.Cross(facingDir.normalized, p);
-        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        int i_fireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
         Vector3[] pointsOnDisc = new Vector3[i_fireRate];
-        for (int i = 0; i < i_fireRate; i++)
+        for (int i = 0; i < i_fireRate; i++) // this is so burstable omg
         {
             pointsOnDisc[i] = GenRandPointDisc(p,q);
         }
@@ -231,7 +234,7 @@ public class LiDAR : MonoBehaviour
     private Vector4 GetColliderRelatedMeshRenderMaterialColor(RaycastHit hit)
     {
         var baseMeshRenderer = hit.collider.gameObject.GetComponent<MeshRenderer>();
-        if (baseMeshRenderer) return baseMeshRenderer.material.color;
+        if (baseMeshRenderer != null && baseMeshRenderer.material != null) return baseMeshRenderer.material.color;
         
         // It's possible either the parent, siblings, or descendants have color values. Expensive, but maybe necessary? Also we're returning as soon as something is found. 
         Transform parent = hit.transform.parent;
@@ -279,6 +282,7 @@ public class LiDAR : MonoBehaviour
     private Vector3 GetPerpendicular(Vector3 cameraRay)
     {
         /// https://stackoverflow.com/questions/39404576/cone-from-direction-vector
+        ///  ask chatgpt if this can be optimized lmao
         cameraRay.Normalize();
         float max = float.NegativeInfinity;
         float min = float.PositiveInfinity;
@@ -322,4 +326,5 @@ public class LiDAR : MonoBehaviour
             Debug.DrawLine(mainCam.transform.position, point + cameraRay, Color.yellow);
         }
     }
+    
 }

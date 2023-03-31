@@ -1,4 +1,4 @@
-Shader "Unlit/DrawSpheres" {
+Shader "Unlit/DrawMeshBRP" {
 
 	Properties {
 		_Smoothness ("Smoothness", Range(0,1)) = 0.5
