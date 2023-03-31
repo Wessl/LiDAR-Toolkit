@@ -120,14 +120,7 @@ public class DrawPoints : MonoBehaviour
         
         else if (pointType == PointType.MeshPoint)
         {
-            if (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset || GraphicsSettings.renderPipelineAsset is HDRenderPipelineAsset)
-            {
-                _material = new Material(meshShaderURP);
-            }
-            else
-            {
-                _material = new Material(meshShaderBRP);
-            }
+            _material = GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset ? new Material(meshShaderURP) : new Material(meshShaderBRP);
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         }

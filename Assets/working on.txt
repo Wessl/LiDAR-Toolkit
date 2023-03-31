@@ -2,7 +2,6 @@ investigate possibility of using burst to parallelize point spawning for optimiz
 checkrayintersections is the most expensive rn: and its because of GetColliderRelatedMeshRenderMaterialColor
 refactor so that not all fields in lidar.cs are public??+
 maybe normals could be used in some fun way. 
-test with different version of unity, different rendering pipelines
 check what has to be done in order to publish someting on the unity asset store, like how do we package, how do we hide our precious source code, any legal/payment setup, etc...
 more optimization!!! 
 think about if the current presentation with just inspector fields is really ideal? yes, but:
