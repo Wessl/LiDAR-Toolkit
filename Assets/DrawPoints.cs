@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -186,8 +185,7 @@ public class DrawPoints : MonoBehaviour
             }
         }
     }
-
-
+    
     public void RenderPointsNow()
     {
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
@@ -230,10 +228,8 @@ public class DrawPoints : MonoBehaviour
         RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
     }
     
-        
     void OnGUI()
     {
-        // this is calculated wrong, think about how many megabytes are actually stored for each thing - you know we have floats and three of them per pos in the computebuffers. 
         float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up. 
         float videoMem = (_posBuffer.count + _colorBuffer.count + _timeBuffer.count) * 3 * 4 / 1048576f * ratioOfTotalUsed;
         string text = videoMem + " MB of video memory used. " + FormatNumber(_bufIndex) + " points rendered.";

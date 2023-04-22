@@ -4,9 +4,12 @@ refactor so that not all fields in lidar.cs are public??+
 maybe normals could be used in some fun way. 
 check what has to be done in order to publish someting on the unity asset store, like how do we package, how do we hide our precious source code, any legal/payment setup, etc...
 more optimization!!! 
-think about if the current presentation with just inspector fields is really ideal? yes, but:
  should we have some kind of api where a game user can change settings? of course the person using this asset is gonna set it up, 
  but what if they want to allow the gamer to change it dynamically in game? think about it .
+ recreate or remove any third party stuff (e.g. the hair dryer)
+ need locally provided documentation
+ "2.5.a Scripts include namespaces within which all named entities and identifiers are declared. You can find more information about namespaces in Microsoft's C# documentation." wtf is the meaning
+ "4.1.b Publishers have an active email address and an actively maintained website that shows relevant work and skill sets." is a github page enough? 
  
 learn more about gpu stuff so we can optimize that stuff too
 spread out the super scan lines line renderer thng
