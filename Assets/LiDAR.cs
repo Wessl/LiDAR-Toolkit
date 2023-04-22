@@ -246,17 +246,23 @@ public class LiDAR : MonoBehaviour
 
     
 
-    private ValueTuple<Vector3[],Vector4[],Vector3[]> CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
+    private (Vector3[], Vector4[], Vector3[]) CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
         Vector3[] pointsHit = new Vector3[points.Length];
         Vector4[] pointColors = new Vector4[points.Length];
         Vector3[] normals = new Vector3[points.Length];
+
         int i = 0;
-        foreach (var point in points)
+        RaycastHit[] hitBuffer = new RaycastHit[1];
+        for (var index = 0; index < points.Length; index++)
         {
-            RaycastHit hit;
-            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, lidarRange, layersToHit))
+            var point = points[index];
+            int hitCount = Physics.RaycastNonAlloc(cameraPos, (cameraRay + point), hitBuffer, lidarRange, layersToHit);
+
+            if (hitCount > 0)
             {
+                RaycastHit hit = hitBuffer[0];
+
                 if (drawPointsRef.overrideColor)
                 {
                     pointColors[i] = drawPointsRef.pointColor;
@@ -268,11 +274,12 @@ public class LiDAR : MonoBehaviour
 
                 // normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
-                
+
                 if (useLineRenderer) DrawRayBetweenPoints(cameraRay, hit.point);
-            }    
+            }
         }
-        return new ValueTuple<Vector3[], Vector4[], Vector3[]>(pointsHit, pointColors, normals);
+
+        return (pointsHit, pointColors, normals);
     }
     
    
@@ -316,7 +323,7 @@ public class LiDAR : MonoBehaviour
         newPos[prevAmount+1] = endPoint;
         lineRenderer.SetPositions(newPos);
     }
-
+    
     private Vector3 GetPerpendicular(Vector3 cameraRay)
     {
         /// https://stackoverflow.com/questions/39404576/cone-from-direction-vector
