@@ -1,6 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
+using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -15,7 +20,8 @@ public class LiDAR : MonoBehaviour
     // Private variables, cached
     private List<RaycastHit> hits = new List<RaycastHit>();
     private Camera mainCam;
-    private float discRMax;
+    private static readonly float discRMax = Mathf.Tan(Mathf.Deg2Rad * 30);
+    private NativeArray<Unity.Mathematics.Random> _rngs;
     
     // General
     [Tooltip("Reference to the DrawPoints object. Necessary since it handles drawing points")]
@@ -121,6 +127,7 @@ public class LiDAR : MonoBehaviour
         }
     }
 
+    [BurstCompile]
     private void SquareScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         // Calculate perpendicular angles to view direction to generate plane upon which points can be generated
@@ -136,6 +143,7 @@ public class LiDAR : MonoBehaviour
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
 
+    [BurstCompile]
     private void LineScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         var right = mainCam.transform.right;
@@ -150,22 +158,58 @@ public class LiDAR : MonoBehaviour
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);
     }
     
+
     private void CircleScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
         var q = Vector3.Cross(facingDir.normalized, p);
         int i_fireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
-        Vector3[] pointsOnDisc = new Vector3[i_fireRate];
-        for (int i = 0; i < i_fireRate; i++) // this is so burstable omg
+        using var pointsOnDisc = new NativeArray<Vector3>(i_fireRate, Allocator.Persistent);
+        var job = new BurstPointsOnDisc
         {
-            pointsOnDisc[i] = GenRandPointDisc(p,q);
-        }
+            FireRate = i_fireRate,
+            P = p,
+            Q = q,
+            seed = (int)System.DateTime.Now.Ticks,
+            Output = pointsOnDisc
+        };
+        job.Schedule().Complete();
 
-        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
+        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc.ToArray());
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    private struct BurstPointsOnDisc : IJob
+    {
+        [ReadOnly] public int FireRate;
+        [ReadOnly] public Vector3 P;
+        [ReadOnly] public Vector3 Q;
 
+        [WriteOnly]
+        public NativeArray<Vector3> Output;
+        
+        public int seed;
+
+        public void Execute()
+        {
+            Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
+            for (int i = 0; i < FireRate; i++)
+            {
+                Output[i] = GenRandPointDisc(P,Q, ref rng);
+            }
+        }
+    }
+    // Now featuring bursty randomization
+    private static Vector3 GenRandPointDisc(Vector3 p, Vector3 q, ref Unity.Mathematics.Random rng)
+    {
+        // Generate random point in the PQ plane disc
+        var theta = rng.NextFloat(0, 2) * Mathf.PI;
+        var r = discRMax * Mathf.Sqrt(rng.NextFloat(0, 1));  // If you don't take the square root the points all end up in the middle. Uses about 0.25 ms/frame, probably worth it as a tradeoff. 
+        return r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
+    }
+    
     private IEnumerator SuperScan()
     {
         // lmao how the fuck did I figure all this out
@@ -230,7 +274,8 @@ public class LiDAR : MonoBehaviour
         }
         return new ValueTuple<Vector3[], Vector4[], Vector3[]>(pointsHit, pointColors, normals);
     }
-
+    
+   
     private Vector4 GetColliderRelatedMeshRenderMaterialColor(RaycastHit hit)
     {
         var baseMeshRenderer = hit.collider.gameObject.GetComponent<MeshRenderer>();
@@ -247,18 +292,11 @@ public class LiDAR : MonoBehaviour
         var childMesh = hit.transform.GetComponentsInChildren<MeshRenderer>();
         if (childMesh[0]) return childMesh[0].material.color;
         
-        Debug.Log("Something fucky wucky happened man");
+        // Something strange must have happened, return a magenta color as default. 
         return Color.magenta;
     }
     
-    private Vector3 GenRandPointDisc(Vector3 p, Vector3 q)
-    {
-        // Generate random point in the PQ plane disc - actually makes sense if u think about it, a pretty simple alg
-        var theta = Random.Range(0f, 2 * Mathf.PI);
-        var r = discRMax * Mathf.Sqrt(Random.Range(0f, 1f));    // If you don't take the square root the points all end up in the middle. Uses about 0.25 ms/frame, probably worth it as a tradeoff. 
-        return r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
-
-    }
+    
     private Vector3 GenRandPointSquare(Vector3 p, Vector3 q, float range)
     {
         float x = Random.Range(-range, range);
@@ -313,7 +351,7 @@ public class LiDAR : MonoBehaviour
 
     private void OnValidate()
     {
-        discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
+        // discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
     }
 
     private void DrawDebug(Vector3 cameraRay, Vector3 perpendicular, Vector3 q, Vector3[] pointOnDisc)
