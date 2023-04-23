@@ -12,7 +12,9 @@ more optimization!!!
  "4.1.b Publishers have an active email address and an actively maintained website that shows relevant work and skill sets." is a github page enough? 
  
 learn more about gpu stuff so we can optimize that stuff too
-spread out the super scan lines line renderer thng
+debug text says vram is capped but the points amount still rises. probably shouldnt be rising anymore
+either have like, a height based point coloring, or more advanced range-based with like a variety of colors not just lerping between two. also, normals. 
+spread out the super scan lines line renderer thing
 technically we could make a draw squares very easily by just modifying the shader code in drawCircles fragment shader
 circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.

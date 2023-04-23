@@ -9,10 +9,11 @@ using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-/*
- * This class handles user input, firing raycasts into space, and decides where points should be drawn in space. 
- */
-
+/// <summary>
+/// This class handles user input, firing raycasts into space, and decides where points should be drawn in space.
+/// Simulates a handheld LiDAR scanner device. 
+/// Author Love Wessman github.com/Wessl/
+/// </summary>
 [RequireComponent(typeof(DrawPoints))]
 [RequireComponent(typeof(LineRenderer))]
 public class LiDAR : MonoBehaviour
@@ -126,24 +127,29 @@ public class LiDAR : MonoBehaviour
             SquareScan(facingDir, cameraPos, cameraRay);
         }
     }
-
-    [BurstCompile]
+    
     private void SquareScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         // Calculate perpendicular angles to view direction to generate plane upon which points can be generated
         var p = mainCam.transform.up;
         var q = mainCam.transform.right;
         int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
-        Vector3[] pointsOnDisc = new Vector3[i_fireRate];
-        for (int i = 0; i < i_fireRate; i++)
+        using var pointsInSquare = new NativeArray<Vector3>(i_fireRate, Allocator.Persistent);
+        var job = new BurstPointsInSquare
         {
-            pointsOnDisc[i] = GenRandPointSquare(p,q,squareScanSize);
-        }
-        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc);
+            FireRate = i_fireRate,
+            P = p,
+            Q = q,
+            SquareScanSize = squareScanSize,
+            seed = (int)System.DateTime.Now.Ticks,
+            Output = pointsInSquare
+        };
+        job.Schedule().Complete();
+
+        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsInSquare.ToArray());
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
 
-    [BurstCompile]
     private void LineScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         var right = mainCam.transform.right;
@@ -180,27 +186,7 @@ public class LiDAR : MonoBehaviour
         drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
     }
     
-    [BurstCompile(CompileSynchronously = true)]
-    private struct BurstPointsOnDisc : IJob
-    {
-        [ReadOnly] public int FireRate;
-        [ReadOnly] public Vector3 P;
-        [ReadOnly] public Vector3 Q;
-
-        [WriteOnly]
-        public NativeArray<Vector3> Output;
-        
-        public int seed;
-
-        public void Execute()
-        {
-            Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
-            for (int i = 0; i < FireRate; i++)
-            {
-                Output[i] = GenRandPointDisc(P,Q, ref rng);
-            }
-        }
-    }
+    
     // Now featuring bursty randomization
     private static Vector3 GenRandPointDisc(Vector3 p, Vector3 q, ref Unity.Mathematics.Random rng)
     {
@@ -208,6 +194,14 @@ public class LiDAR : MonoBehaviour
         var theta = rng.NextFloat(0, 2) * Mathf.PI;
         var r = discRMax * Mathf.Sqrt(rng.NextFloat(0, 1));  // If you don't take the square root the points all end up in the middle. Uses about 0.25 ms/frame, probably worth it as a tradeoff. 
         return r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
+    }
+    
+    private static Vector3 GenRandPointSquare(Vector3 p, Vector3 q, float range, ref Unity.Mathematics.Random rng)
+    {
+        float x = rng.NextFloat(-range, range);
+        float y = rng.NextFloat(-range, range);
+        Vector3 vec = p * x + q * y;
+        return vec;
     }
     
     private IEnumerator SuperScan()
@@ -231,7 +225,7 @@ public class LiDAR : MonoBehaviour
         {
             var timeBefore = Time.time;
             var meta = i / (float)superScanSqrtNum * Mathf.PI ;
-            for (int j = 0; j < superScanSqrtNum; j++)
+            for (int j = 0; j < superScanSqrtNum; j++) // burstable? :eyes:
             {
                 var theta = j / (float)superScanSqrtNum * Mathf.PI + Math.PI/2.0f;
                 var v =  (Mathf.Cos(meta) * upDir/(magic) + Mathf.Sin((float)theta) * q/(magic/aspect));    // instead of magic numbers use randoms that are half of cell size and use screen ratio for other numbers
@@ -257,12 +251,9 @@ public class LiDAR : MonoBehaviour
         for (var index = 0; index < points.Length; index++)
         {
             var point = points[index];
-            int hitCount = Physics.RaycastNonAlloc(cameraPos, (cameraRay + point), hitBuffer, lidarRange, layersToHit);
-
-            if (hitCount > 0)
+            RaycastHit hit;
+            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, lidarRange, layersToHit))
             {
-                RaycastHit hit = hitBuffer[0];
-
                 if (drawPointsRef.overrideColor)
                 {
                     pointColors[i] = drawPointsRef.pointColor;
@@ -304,13 +295,7 @@ public class LiDAR : MonoBehaviour
     }
     
     
-    private Vector3 GenRandPointSquare(Vector3 p, Vector3 q, float range)
-    {
-        float x = Random.Range(-range, range);
-        float y = Random.Range(-range, range);
-        Vector3 vec = p * x + q * y;
-        return vec;
-    }
+
 
     private void DrawRayBetweenPoints(Vector3 cameraRay, Vector3 endPoint)
     {
@@ -359,6 +344,50 @@ public class LiDAR : MonoBehaviour
     private void OnValidate()
     {
         // discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
+    }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    private struct BurstPointsOnDisc : IJob
+    {
+        [ReadOnly] public int FireRate;
+        [ReadOnly] public Vector3 P;
+        [ReadOnly] public Vector3 Q;
+
+        [WriteOnly]
+        public NativeArray<Vector3> Output;
+        
+        public int seed;
+
+        public void Execute()
+        {
+            Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
+            for (int i = 0; i < FireRate; i++)
+            {
+                Output[i] = GenRandPointDisc(P,Q, ref rng);
+            }
+        }
+    }
+    [BurstCompile(CompileSynchronously = true)]
+    private struct BurstPointsInSquare : IJob
+    {
+        [ReadOnly] public int FireRate;
+        [ReadOnly] public Vector3 P;
+        [ReadOnly] public Vector3 Q;
+        [ReadOnly] public float SquareScanSize;
+
+        [WriteOnly]
+        public NativeArray<Vector3> Output;
+        
+        public int seed;
+
+        public void Execute()
+        {
+            Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
+            for (int i = 0; i < FireRate; i++)
+            {
+                Output[i] = GenRandPointSquare(P,Q, SquareScanSize, ref rng);
+            }
+        }
     }
 
     private void DrawDebug(Vector3 cameraRay, Vector3 perpendicular, Vector3 q, Vector3[] pointOnDisc)

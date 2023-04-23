@@ -6,6 +6,10 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
+/// <summary>
+/// This class handles actually drawing the points on the GPU, with data created by the LiDAR class.
+/// Author Love Wessman github.com/Wessl/
+/// </summary>
 public class DrawPoints : MonoBehaviour
 {
     [Header("Shader File References")]
