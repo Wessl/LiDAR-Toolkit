@@ -1,5 +1,6 @@
 # LiDAR-Toolkit
-Toolkit for making LiDAR-like gameplay in Unity
+Toolkit for making LiDAR-like gameplay in Unity.
+Only works with BRP and URP - HDRP is not supported.
 
 * Supports three different point types (Point, Mesh, Circle)
 * Variable scanning size
