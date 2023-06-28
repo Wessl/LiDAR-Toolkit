@@ -17,6 +17,7 @@ Shader "Unlit/DrawMeshBRP" {
 		#ifdef SHADER_API_D3D11
 		StructuredBuffer<float4> colorbuffer;
 		StructuredBuffer<float> timebuffer;
+		StructuredBuffer<float3> normalbuffer;
 		#endif
 		float fadeTime;
 		#include "Assets/PointGPU.hlsl"

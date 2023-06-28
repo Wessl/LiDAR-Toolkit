@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -50,18 +51,22 @@ public class DrawPoints : MonoBehaviour
     private ComputeBuffer _posBuffer;
     private ComputeBuffer _colorBuffer;
     private ComputeBuffer _timeBuffer;              // Used for time-based effects
+    private ComputeBuffer _normalBuffer;
+    private ComputeBuffer[] _computeBuffers;
+    private const int COMPUTEBUFFERCOUNT = 4;
     [Tooltip("Change at your own risk. Can cause crashes if you allocate more memory than what is available to you." +
              " Example: Three buffers are used to render points, so a limit of 576MB => 192MB per buffer, and 12 bytes" +
              " is needed to store each point (4 bytes per float, 3 per Vector3) => 16MB of points ~16.8 million points rendered." +
              "Also, note that just because you have a lot more VRAM than what you allocate here, rendering speed can still get quite low if you decide to use meshes instead of circles or pixels.")]
     public float hardVramLimitInMegabytes = 576f;
-    private int computeBufferCount = 16777216;       // 2^24. 3*4*16777216 = 192MB
+    private int _ComputeBufferSize = 16777216;       // 2^24. 3*4*16777216 = 192MB
     private int _strideVec3;
     private int _strideVec4;
     private Bounds bounds;
     private Camera mainCam;
     
     private const int DANGEROUS_VIDEO_MEMORY_AMOUNT = 1500000;
+    private const double MEGABYTE = 1048576; 
 
     // Debug
     [SerializeField] private Text debugText;
@@ -71,15 +76,19 @@ public class DrawPoints : MonoBehaviour
         _posBuffer?.Release();
         _colorBuffer?.Release();
         _timeBuffer?.Release();
+        _normalBuffer?.Release();
         _strideVec3 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector3));
         _strideVec4 = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Vector4));
         
         SetUpMaterials();
-        CalculateCompBufferCount();
-        _posBuffer = new ComputeBuffer (computeBufferCount, _strideVec3, ComputeBufferType.Default);
-        _colorBuffer = new ComputeBuffer(computeBufferCount, _strideVec4, ComputeBufferType.Default);
-        _timeBuffer = new ComputeBuffer(computeBufferCount, sizeof(float), ComputeBufferType.Default);
-
+        _ComputeBufferSize = CalculateCompBufferSize();
+        _posBuffer = new ComputeBuffer (_ComputeBufferSize, _strideVec3, ComputeBufferType.Default);
+        _colorBuffer = new ComputeBuffer(_ComputeBufferSize, _strideVec4, ComputeBufferType.Default);
+        _timeBuffer = new ComputeBuffer(_ComputeBufferSize, sizeof(float), ComputeBufferType.Default);
+        _normalBuffer = new ComputeBuffer(_ComputeBufferSize, _strideVec3, ComputeBufferType.Default);
+        _computeBuffers = new ComputeBuffer[] {_posBuffer, _colorBuffer, _timeBuffer, _normalBuffer};
+        
+        
         _bufIndex = 0;
         mainCam = Camera.main;
         _canStartRendering = false;
@@ -88,24 +97,22 @@ public class DrawPoints : MonoBehaviour
     
     
 
-    private void CalculateCompBufferCount()
+    private int CalculateCompBufferSize()
     {
-        // We're using three buffers in total. 12 bytes per index in each buffer. 1048576 is 1 megabyte.
-        double singleBufferLength = (hardVramLimitInMegabytes/(3*3*4)) * 1048576;
+        int compBufCount;
+        // We're using N buffers in total. 12 bytes per index in each buffer. 1048576 is 1 megabyte.
+        double singleBufferLength = (hardVramLimitInMegabytes/(COMPUTEBUFFERCOUNT*3*4)) * MEGABYTE;
         var exponent = (Math.Log(singleBufferLength, 2));
-        // if the thing we got is not a perfect two exponent, make it so. 
+        // If the thing we got is not a perfect two exponent, make it so. 
         if (exponent % 1 == 0)
-        {
-            computeBufferCount = (int)singleBufferLength; // they picked a nice number :)
-        }
+            compBufCount = (int)singleBufferLength; // The user picked a nice number :)
         else
         {
             var roundedDownExponent = Math.Floor(exponent);
-            computeBufferCount = (int)Math.Pow(2, roundedDownExponent);
-            Debug.Log("The hard limit in VRAM you chose was automatically changed to " +
-                      computeBufferCount * 4 * 3 * 3 / (1048576));
+            compBufCount = (int)Math.Pow(2, roundedDownExponent);     // the reason we are doing a calculation here is to "go back" to the input value of the user
+            Debug.Log($"The hard limit in VRAM you chose was automatically changed to {compBufCount * 4 * 3 * COMPUTEBUFFERCOUNT / (MEGABYTE)}, this number will divide nicer into the number and size of buffers we're using.");
         }
-        
+        return compBufCount;
     }
 
     public void SetUpMaterials()
@@ -136,7 +143,7 @@ public class DrawPoints : MonoBehaviour
     public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
     {
         int amount = pointPositions.Length;
-        int bufferStartIndex = _bufIndex % (computeBufferCount - amount);
+        int bufferStartIndex = _bufIndex % (_ComputeBufferSize - amount);
         float[] timestamps = new float[amount];
         
         if (fadePointsOverTime)
@@ -144,14 +151,12 @@ public class DrawPoints : MonoBehaviour
             for (int i = 0; i < amount; i++) timestamps[i] = Time.time;
             _timeBuffer.SetData(timestamps, 0, bufferStartIndex, amount);
         }
-        
         _posBuffer.SetData (pointPositions, 0, bufferStartIndex, amount);
         _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
+        _normalBuffer.SetData(normals, 0, bufferStartIndex, amount);
         
         _bufIndex += amount;
         _canStartRendering = true;
-        // Debug
-        // debugText.text = "Points: " + _bufIndex;
     }
     
     
@@ -194,12 +199,14 @@ public class DrawPoints : MonoBehaviour
     {
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
         _material.SetPass(0);
+        // todo: no more string based property lookups!!
         _material.SetVector("camerapos", mainCam.transform.position);
         _material.SetFloat("fadeTime", fadeTime);
         _material.SetBuffer("posbuffer", _posBuffer);
         _material.SetBuffer("colorbuffer", _colorBuffer);
         _material.SetBuffer("timebuffer", _timeBuffer);
-        var count = Mathf.Min(_bufIndex, computeBufferCount);
+        _material.SetBuffer("normalbuffer", _normalBuffer);
+        var count = Mathf.Min(_bufIndex, _ComputeBufferSize);
         if (pointType == PointType.PixelPoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Points, count, 1);
@@ -226,21 +233,20 @@ public class DrawPoints : MonoBehaviour
 
     void OnDestroy()
     {
-        _posBuffer.Release();
-        _colorBuffer.Release();
-        _timeBuffer.Release();
+        _computeBuffers.ToList().ForEach(buffer => buffer.Release());
         RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
     }
     
     void OnGUI()
     {
-        float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up. 
-        float videoMem = (_posBuffer.count + _colorBuffer.count + _timeBuffer.count) * 3 * 4 / 1048576f * ratioOfTotalUsed;
-        string text = videoMem + " MB of video memory used. " + FormatNumber(_bufIndex) + " points rendered.";
+        float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up.
+        float videoMem = (_computeBuffers.ToList().Sum(buffer => buffer.count) * 3 * 4 / (float)MEGABYTE * ratioOfTotalUsed);
+        string text = $"{videoMem} MB of video memory used. {FormatNumber(_bufIndex)} points rendered.";
         if (videoMem > DANGEROUS_VIDEO_MEMORY_AMOUNT)
         {
+            // todo: is the dangerous video memory amount really set correctly? 
             text = videoMem + " MB of video memory used - Warning! Don't go higher unless you know what you're doing.";
-        } 
+        }
         
         GUI.Label(new Rect(10, 10, 500, 40), text);
     }
@@ -250,14 +256,12 @@ public class DrawPoints : MonoBehaviour
         // Ensure number has max 3 significant digits (no rounding up can happen)
         long i = (long)Math.Pow(10, (int)Math.Max(0, Math.Log10(num) - 2));
         num = num / i * i;
-
-        if (num >= 1000000000)
-            return (num / 1000000000D).ToString("0.##") + "B";
-        if (num >= 1000000)
-            return (num / 1000000D).ToString("0.##") + "M";
-        if (num >= 1000)
-            return (num / 1000D).ToString("0.##") + "K";
-
-        return num.ToString("#,0");
+        return num switch
+        {
+            >= 1000000000 => (num / 1000000000D).ToString("0.##") + "B",
+            >= 1000000 => (num / 1000000D).ToString("0.##") + "M",
+            >= 1000 => (num / 1000D).ToString("0.##") + "K",
+            _ => num.ToString("#,0")
+        };
     }
 }

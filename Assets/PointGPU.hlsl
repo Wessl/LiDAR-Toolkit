@@ -15,6 +15,7 @@ void ConfigureProcedural () {
 	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 		float3 position = posbuffer[unity_InstanceID];
 		color = colorbuffer[unity_InstanceID];
+		color = color * float4(normalbuffer[unity_InstanceID],1.0);
 		currTime = timebuffer[unity_InstanceID];
 		unity_ObjectToWorld = 0.0;
 		unity_ObjectToWorld._m03_m13_m23_m33 = float4(position, 1.0);

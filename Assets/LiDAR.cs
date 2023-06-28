@@ -133,35 +133,37 @@ public class LiDAR : MonoBehaviour
         // Calculate perpendicular angles to view direction to generate plane upon which points can be generated
         var p = mainCam.transform.up;
         var q = mainCam.transform.right;
-        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
-        using var pointsInSquare = new NativeArray<Vector3>(i_fireRate, Allocator.Persistent);
+        int calculatedFireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        using var pointsInSquare = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
         var job = new BurstPointsInSquare
         {
-            FireRate = i_fireRate,
+            FireRate = calculatedFireRate,
             P = p,
             Q = q,
             SquareScanSize = squareScanSize,
-            seed = (int)System.DateTime.Now.Ticks,
+            seed = System.DateTime.Now.Ticks,
             Output = pointsInSquare
         };
         job.Schedule().Complete();
 
-        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsInSquare.ToArray());
-        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
+        CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsInSquare.ToArray(),
+            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
+        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
     }
 
     private void LineScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
     {
         var right = mainCam.transform.right;
         
-        int i_fireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
-        Vector3[] pointsOnLine = new Vector3[i_fireRate];
-        for (int i = 0; i < i_fireRate; i++)
+        int calculatedFireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
+        Vector3[] pointsOnLine = new Vector3[calculatedFireRate];
+        for (int i = 0; i < calculatedFireRate; i++)
         {
             pointsOnLine[i] = right * Random.Range(-1f, 1f);
         }
-        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnLine);
-        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);
+        CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnLine,
+            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
+        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
     }
     
 
@@ -170,20 +172,21 @@ public class LiDAR : MonoBehaviour
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
         var q = Vector3.Cross(facingDir.normalized, p);
-        int i_fireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
-        using var pointsOnDisc = new NativeArray<Vector3>(i_fireRate, Allocator.Persistent);
+        int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
+        using var pointsOnDisc = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
         var job = new BurstPointsOnDisc
         {
-            FireRate = i_fireRate,
+            FireRate = calculatedFireRate,
             P = p,
             Q = q,
-            seed = (int)System.DateTime.Now.Ticks,
+            seed = System.DateTime.Now.Ticks,
             Output = pointsOnDisc
         };
         job.Schedule().Complete();
 
-        ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc.ToArray());
-        drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);     // It makes more sense to split these into two
+        CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc.ToArray(),
+                out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
+            drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     // It makes more sense to split these into two
     }
     
     
@@ -231,20 +234,21 @@ public class LiDAR : MonoBehaviour
                 var v =  (Mathf.Cos(meta) * upDir/(magic) + Mathf.Sin((float)theta) * q/(magic/aspect));    // instead of magic numbers use randoms that are half of cell size and use screen ratio for other numbers
                 pointsOnPlane[j] = v;
             }
-            ValueTuple<Vector3[],Vector4[],Vector3[]> pointsHit = CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane);
-            drawPointsRef.UploadPointData(pointsHit.Item1, pointsHit.Item2, pointsHit.Item3);  
+            CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane,
+                out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
+            drawPointsRef.UploadPointData(pointsHit, pointColors, normals);  
             var timePassed = Time.time - timeBefore;
             yield return new WaitForSecondsRealtime(superScanWaitTime - timePassed);
         }
     }
 
     
-
-    private (Vector3[], Vector4[], Vector3[]) CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
+    // Todo... Maybe make this handle NativeArrays in order to not have to do .ToArray() from circlescan? Is ToArray even that expensive? 
+    private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points, out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals)
     {
-        Vector3[] pointsHit = new Vector3[points.Length];
-        Vector4[] pointColors = new Vector4[points.Length];
-        Vector3[] normals = new Vector3[points.Length];
+        pointsHit = new Vector3[points.Length];
+        pointColors = new Vector4[points.Length];
+        normals = new Vector3[points.Length];
 
         int i = 0;
         RaycastHit[] hitBuffer = new RaycastHit[1];
@@ -263,14 +267,12 @@ public class LiDAR : MonoBehaviour
                     pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
                 }
 
-                // normals[i] = hit.normal;
+                normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
 
                 if (useLineRenderer) DrawRayBetweenPoints(cameraRay, hit.point);
             }
         }
-
-        return (pointsHit, pointColors, normals);
     }
     
    
@@ -294,9 +296,6 @@ public class LiDAR : MonoBehaviour
         return Color.magenta;
     }
     
-    
-
-
     private void DrawRayBetweenPoints(Vector3 cameraRay, Vector3 endPoint)
     {
         var prevAmount = lineRenderer.positionCount;
@@ -311,9 +310,7 @@ public class LiDAR : MonoBehaviour
     
     private Vector3 GetPerpendicular(Vector3 cameraRay)
     {
-        /// https://stackoverflow.com/questions/39404576/cone-from-direction-vector
-        ///  ask chatgpt if this can be optimized lmao
-        cameraRay.Normalize();
+        // Idea from here https://stackoverflow.com/questions/39404576/cone-from-direction-vector
         float max = float.NegativeInfinity;
         float min = float.PositiveInfinity;
         int axisMin = 1, axisMax = 1;
@@ -324,9 +321,6 @@ public class LiDAR : MonoBehaviour
                 axisMax = i;
                 max = cameraRay[i];
             }
-        }
-        for (int i = 0; i < 3; i++)
-        {
             if (Mathf.Abs(cameraRay[i]) < min)
             {
                 axisMin = i;
@@ -334,15 +328,16 @@ public class LiDAR : MonoBehaviour
             }
         }
         // construct perpendicular
-        Vector3 perp = new Vector3();
+        Vector3 perpendicular = new Vector3();
         var midIndex = 2 * (axisMax + axisMin) % 3;
-        perp[axisMax] = cameraRay[midIndex];
-        perp[midIndex] = -max;
-        return perp.normalized;
+        perpendicular[axisMax] = cameraRay[midIndex];
+        perpendicular[midIndex] = -max;
+        return perpendicular.normalized;
     }
 
     private void OnValidate()
     {
+        // todo Make this work with burst
         // discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
     }
     
@@ -356,7 +351,7 @@ public class LiDAR : MonoBehaviour
         [WriteOnly]
         public NativeArray<Vector3> Output;
         
-        public int seed;
+        public long seed;
 
         public void Execute()
         {
@@ -378,7 +373,7 @@ public class LiDAR : MonoBehaviour
         [WriteOnly]
         public NativeArray<Vector3> Output;
         
-        public int seed;
+        public long seed;
 
         public void Execute()
         {
