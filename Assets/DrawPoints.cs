@@ -70,6 +70,13 @@ public class DrawPoints : MonoBehaviour
 
     // Debug
     [SerializeField] private Text debugText;
+    
+    private static readonly int Camerapos = Shader.PropertyToID("camerapos");
+    private static readonly int FadeTime = Shader.PropertyToID("fadeTime");
+    private static readonly int Posbuffer = Shader.PropertyToID("posbuffer");
+    private static readonly int Colorbuffer = Shader.PropertyToID("colorbuffer");
+    private static readonly int Timebuffer = Shader.PropertyToID("timebuffer");
+    private static readonly int Normalbuffer = Shader.PropertyToID("normalbuffer");
 
     private void Awake()
     {
@@ -86,7 +93,7 @@ public class DrawPoints : MonoBehaviour
         _colorBuffer = new ComputeBuffer(_ComputeBufferSize, _strideVec4, ComputeBufferType.Default);
         _timeBuffer = new ComputeBuffer(_ComputeBufferSize, sizeof(float), ComputeBufferType.Default);
         _normalBuffer = new ComputeBuffer(_ComputeBufferSize, _strideVec3, ComputeBufferType.Default);
-        _computeBuffers = new ComputeBuffer[] {_posBuffer, _colorBuffer, _timeBuffer, _normalBuffer};
+        _computeBuffers = new[] {_posBuffer, _colorBuffer, _timeBuffer, _normalBuffer};
         
         
         _bufIndex = 0;
@@ -199,13 +206,12 @@ public class DrawPoints : MonoBehaviour
     {
         bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
         _material.SetPass(0);
-        // todo: no more string based property lookups!!
-        _material.SetVector("camerapos", mainCam.transform.position);
-        _material.SetFloat("fadeTime", fadeTime);
-        _material.SetBuffer("posbuffer", _posBuffer);
-        _material.SetBuffer("colorbuffer", _colorBuffer);
-        _material.SetBuffer("timebuffer", _timeBuffer);
-        _material.SetBuffer("normalbuffer", _normalBuffer);
+        _material.SetVector(Camerapos, mainCam.transform.position);
+        _material.SetFloat(FadeTime, fadeTime);
+        _material.SetBuffer(Posbuffer, _posBuffer);
+        _material.SetBuffer(Colorbuffer, _colorBuffer);
+        _material.SetBuffer(Timebuffer, _timeBuffer);
+        _material.SetBuffer(Normalbuffer, _normalBuffer);
         var count = Mathf.Min(_bufIndex, _ComputeBufferSize);
         if (pointType == PointType.PixelPoint)
         {
