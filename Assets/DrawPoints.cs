@@ -124,6 +124,11 @@ public class DrawPoints : MonoBehaviour
 
     public void SetUpMaterials()
     {
+        if (pointShader == null || circleShader == null || meshShaderBRP == null || meshShaderBRP == null)
+        {
+            Debug.LogWarning("Can't set up materials when shader references are empty, please set them. ");
+            return;
+        }
         if (pointType == PointType.PixelPoint)
         {
             _material = new Material(pointShader);

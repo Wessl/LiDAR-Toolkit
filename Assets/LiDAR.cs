@@ -60,6 +60,7 @@ public class LiDAR : MonoBehaviour
 
     [Header("Line Renderer")]
     [Tooltip("Should lines be drawn between player and new point sources?")]
+    // TODO: DONT CAUSE REFERENCE ERRORS IF YOU DONT HAVE A LINE RENDERER ASSIGNED
     public bool useLineRenderer;
     public LineRenderer lineRenderer;
     public Transform lineSpawnSource;
@@ -68,7 +69,7 @@ public class LiDAR : MonoBehaviour
     
     public enum ScanType
     {
-        Circle, Line, Square
+        Circle, Line, Square, Sphere
     }
     
     // Start is called before the first frame update
@@ -91,10 +92,12 @@ public class LiDAR : MonoBehaviour
         else if (Input.GetKey(lidarActivationKey))
         {
             DefaultScan();
+        } else if (scanType == ScanType.Sphere)
+        {
+            SphereScan(this.transform.position, 100);
         }
 
         ScanSizeAreaUpdate(Input.mouseScrollDelta);
-        
     }
 
     private void ScanSizeAreaUpdate(Vector2 mouseScrollDelta)
@@ -115,24 +118,27 @@ public class LiDAR : MonoBehaviour
     {
         var facingDir = mainCam.gameObject.transform.forward;
         var cameraPos = mainCam.transform.position;
-        var cameraRay = (cameraPos + facingDir);
         if (scanType == ScanType.Circle)
         {
-            CircleScan(facingDir, cameraPos, cameraRay);
+            CircleScan(cameraPos, facingDir);
         } else if (scanType == ScanType.Line)
         {
-            LineScan(facingDir, cameraPos, cameraRay);
+            LineScan(cameraPos, facingDir);
         } else if (scanType == ScanType.Square)
         {
-            SquareScan(facingDir, cameraPos, cameraRay);
+            SquareScan(cameraPos, facingDir);
+        } else if (scanType == ScanType.Sphere)
+        {
+            SphereScan(cameraPos, 100);
         }
     }
     
-    private void SquareScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    private void SquareScan(Vector3 cameraPos, Vector3 facingDir)
     {
         // Calculate perpendicular angles to view direction to generate plane upon which points can be generated
-        var p = mainCam.transform.up;
-        var q = mainCam.transform.right;
+        var mainCamTransform = mainCam.transform;
+        var p = mainCamTransform.up;
+        var q = mainCamTransform.right;
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
         using var pointsInSquare = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
         var job = new BurstPointsInSquare
@@ -146,12 +152,12 @@ public class LiDAR : MonoBehaviour
         };
         job.Schedule().Complete();
 
-        CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsInSquare.ToArray(),
+        CheckRayIntersections(cameraPos, facingDir, pointsInSquare.ToArray(),
             out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
         drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
     }
 
-    private void LineScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    public void LineScan(Vector3 cameraPos, Vector3 facingDir)
     {
         var right = mainCam.transform.right;
         
@@ -161,13 +167,13 @@ public class LiDAR : MonoBehaviour
         {
             pointsOnLine[i] = right * Random.Range(-1f, 1f);
         }
-        CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnLine,
+        CheckRayIntersections(cameraPos, facingDir, pointsOnLine,
             out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
         drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
     }
     
 
-    private void CircleScan(Vector3 facingDir, Vector3 cameraPos, Vector3 cameraRay)
+    private void CircleScan(Vector3 cameraPos, Vector3 facingDir)
     {
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
@@ -184,9 +190,29 @@ public class LiDAR : MonoBehaviour
         };
         job.Schedule().Complete();
 
-        CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnDisc.ToArray(),
+        CheckRayIntersections(cameraPos, facingDir, pointsOnDisc.ToArray(),
                 out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
             drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     // It makes more sense to split these into two
+    }
+
+    public void SphereScan(Vector3 sourcePos, float len)
+    {
+        // Scan in a sphere around me :) 
+        Debug.Log("ayyyyyyy");
+        var dir = Random.onUnitSphere;
+        int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
+        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
+        var job = new BurstPointsInSphere
+        {
+            FireRate = calculatedFireRate,
+            seed = (int)System.DateTime.Now.Ticks,
+            len = len,
+            Output = pointsInSphere
+        };
+        job.Schedule().Complete();
+        CheckRayIntersections(sourcePos, Vector3.zero, pointsInSphere.ToArray(),
+            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
+        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     
     }
     
     
@@ -254,9 +280,9 @@ public class LiDAR : MonoBehaviour
         RaycastHit[] hitBuffer = new RaycastHit[1];
         for (var index = 0; index < points.Length; index++)
         {
-            var point = points[index];
+            Vector3 point = points[index];
             RaycastHit hit;
-            if (Physics.Raycast(cameraPos, (cameraRay + point), out hit, lidarRange, layersToHit))
+            if (Physics.Raycast(cameraPos, cameraRay + point, out hit, lidarRange, layersToHit))
             {
                 if (drawPointsRef.overrideColor)
                 {
@@ -270,8 +296,9 @@ public class LiDAR : MonoBehaviour
                 normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
 
-                if (useLineRenderer) DrawRayBetweenPoints(cameraRay, hit.point);
+                
             }
+            if (useLineRenderer) DrawRayBetweenPoints(cameraPos, hit.point);
         }
     }
     
@@ -339,6 +366,30 @@ public class LiDAR : MonoBehaviour
     {
         // todo Make this work with burst
         // discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
+    }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    private struct BurstPointsInSphere : IJob
+    {
+        [ReadOnly] public int FireRate;
+        [ReadOnly] public Vector3 sourcePos;
+        [ReadOnly] public float len;
+
+        [WriteOnly]
+        public NativeArray<Vector3> Output;
+        
+        public int seed;
+
+        public void Execute()
+        {
+            Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
+            float twoPI = (float)(2 * Math.PI);
+            for (int i = 0; i < FireRate; i++)
+            {
+                Vector3 vec3 = new Vector3(rng.NextFloat(-1, 1), rng.NextFloat(-1, 1), rng.NextFloat(-1, 1));
+                Output[i] = vec3 * len;
+            }
+        }
     }
     
     [BurstCompile(CompileSynchronously = true)]
