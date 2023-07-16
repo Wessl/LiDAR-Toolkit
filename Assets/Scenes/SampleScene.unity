@@ -453,7 +453,7 @@ GameObject:
   - component: {fileID: 765928093}
   - component: {fileID: 765928092}
   m_Layer: 0
-  m_Name: GIMME COOL SCANNER
+  m_Name: SphereScanner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -466,7 +466,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 765928091}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -525,12 +525,13 @@ MonoBehaviour:
   layersToHit:
     serializedVersion: 2
     m_Bits: 1
-  lidarRange: 100
+  lidarRange: 500
+  sourcePosition: {fileID: 765928097}
   scanType: 3
   lidarActivationKey: 323
   coneAngle: 0
   squareScanSize: 0
-  fireRate: 1000
+  fireRate: 10000
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -538,7 +539,7 @@ MonoBehaviour:
   defaultScanSFX: {fileID: 0}
   superScanSFX: {fileID: 0}
   audioSource: {fileID: 0}
-  useLineRenderer: 1
+  useLineRenderer: 0
   lineRenderer: {fileID: 765928095}
   lineSpawnSource: {fileID: 765928097}
   maxLinesPerFrame: 500
@@ -653,15 +654,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b8e55c59e3f0c14ba0447f860534c03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  printInfoToGUI: 0
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
   pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  pointScale: 0.075
+  pointScale: 0.1
   overrideColor: 1
-  pointColor: {r: 0.9716981, g: 0.95550984, b: 0.16958882, a: 0}
+  pointColor: {r: 1, g: 0.98048776, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0, g: 0, b: 0, a: 0}
   farPointDistance: 0
@@ -677,7 +679,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 765928091}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.47, z: -1.87}
+  m_LocalPosition: {x: 0, y: 2.35, z: -1.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -718,7 +720,6 @@ GameObject:
   - component: {fileID: 963194230}
   - component: {fileID: 963194232}
   - component: {fileID: 963194229}
-  - component: {fileID: 963194233}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1016,6 +1017,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 1000
+  sourcePosition: {fileID: 0}
   scanType: 0
   lidarActivationKey: 323
   coneAngle: 30
@@ -1061,14 +1063,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b8e55c59e3f0c14ba0447f860534c03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  printInfoToGUI: 1
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 0
+  pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
-  overrideColor: 0
+  overrideColor: 1
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
@@ -1077,18 +1080,6 @@ MonoBehaviour:
   fadeTime: 0
   hardVramLimitInMegabytes: 250
   debugText: {fileID: 0}
---- !u!114 &963194233
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23c1ce4fb46143f46bc5cb5224c934f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &988206181
 GameObject:
   m_ObjectHideFlags: 0
@@ -1129,7 +1120,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 988206181}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1

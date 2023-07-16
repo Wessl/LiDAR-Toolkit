@@ -30,6 +30,8 @@ public class LiDAR : MonoBehaviour
     [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
     public LayerMask layersToHit;
     public int lidarRange = 100;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
+    [Tooltip("The source of the LiDAR rays being emitted. If you are shooting from the camera, use the camera, if a special object is emitting rays, use that object's position.")]
+    public Transform sourcePosition;
     
     [Header("Regular scan")]    
     public ScanType scanType;
@@ -94,7 +96,7 @@ public class LiDAR : MonoBehaviour
             DefaultScan();
         } else if (scanType == ScanType.Sphere)
         {
-            SphereScan(this.transform.position, 100);
+            SphereScan(sourcePosition.position, 100);
         }
 
         ScanSizeAreaUpdate(Input.mouseScrollDelta);
@@ -198,7 +200,6 @@ public class LiDAR : MonoBehaviour
     public void SphereScan(Vector3 sourcePos, float len)
     {
         // Scan in a sphere around me :) 
-        Debug.Log("ayyyyyyy");
         var dir = Random.onUnitSphere;
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
         using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);

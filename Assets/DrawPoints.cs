@@ -13,6 +13,8 @@ using UnityEngine.UI;
 /// </summary>
 public class DrawPoints : MonoBehaviour
 {
+    [Header("Temporary hacky half-baked 'solutions'")]
+    public bool printInfoToGUI = false;
     [Header("Shader File References")]
     public Shader pointShader;
     public Shader circleShader;
@@ -146,6 +148,7 @@ public class DrawPoints : MonoBehaviour
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         }
+        if (!useColorGradient) farPointDistance = -1;
         _material.SetColor("farcolor", farPointColor);
         _material.SetFloat("fardist", farPointDistance);
 
@@ -250,6 +253,7 @@ public class DrawPoints : MonoBehaviour
     
     void OnGUI()
     {
+        if (!printInfoToGUI) return;
         float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up.
         float videoMem = (_computeBuffers.ToList().Sum(buffer => buffer.count) * 3 * 4 / (float)MEGABYTE * ratioOfTotalUsed);
         string text = $"{videoMem} MB of video memory used. {FormatNumber(_bufIndex)} points rendered.";

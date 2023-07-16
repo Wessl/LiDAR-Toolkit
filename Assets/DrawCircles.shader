@@ -31,6 +31,11 @@ Shader "Draw Circles"
                 float2 uv : TEXCOORD0;
                 uint instance : SV_INSTANCEID;
             };
+            
+            float Mod(float x, float y)
+            {
+                return x - y * floor(x/y);
+            }
  
             double Mod(double x, double y)
             {
