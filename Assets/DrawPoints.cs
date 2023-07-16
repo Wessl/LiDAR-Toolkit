@@ -45,6 +45,7 @@ public class DrawPoints : MonoBehaviour
     [Tooltip("Works best with Circle and Mesh points.")]
     public bool fadePointsOverTime;
     public float fadeTime;
+    public bool useNormalsForColor;
     
     // Private global variables
     private Material _material;                     // The material reference built from the active shader
@@ -167,8 +168,14 @@ public class DrawPoints : MonoBehaviour
             _timeBuffer.SetData(timestamps, 0, bufferStartIndex, amount);
         }
         _posBuffer.SetData (pointPositions, 0, bufferStartIndex, amount);
-        _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
-        _normalBuffer.SetData(normals, 0, bufferStartIndex, amount);
+        if (useNormalsForColor)
+        {
+            _normalBuffer.SetData(normals, 0, bufferStartIndex, amount);
+        }
+        else
+        {
+            _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
+        }
         
         _bufIndex += amount;
         _canStartRendering = true;

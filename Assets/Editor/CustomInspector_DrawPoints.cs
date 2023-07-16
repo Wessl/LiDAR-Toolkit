@@ -31,7 +31,7 @@ namespace Editor
             myTarget.farPointColor = EditorGUILayout.ColorField("Far Color", myTarget.farPointColor);
             myTarget.farPointDistance = EditorGUILayout.FloatField("Far Distance", myTarget.farPointDistance);
             EditorGUILayout.EndToggleGroup();
-            
+
             if (GUI.changed) myTarget.OnValidate();
             
             serializedObject.ApplyModifiedProperties();

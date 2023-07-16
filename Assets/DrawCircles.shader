@@ -60,7 +60,9 @@ Shader "Draw Circles"
                 vs.uv = float2(u,v);
                 float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
                 dist = distance(camerapos, center);
-                vs.color = lerp(float4(normalbuffer[instance],1), farcolor, (dist/fardist));
+                // This assumes we are only setting either the normal buffer or the color buffer 
+                vs.color = float4(normalbuffer[instance],1) + colorbuffer[instance];
+                vs.color = lerp(vs.color, farcolor, (dist/fardist));
                 // billboard. why does this frankensteiny mess even work remotely
                 float4 pos2 = mul(UNITY_MATRIX_P, 
                 float4(UnityObjectToViewPos(float3(0.0,0.0,0.0)),1.0)

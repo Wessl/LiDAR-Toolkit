@@ -666,9 +666,10 @@ MonoBehaviour:
   pointColor: {r: 1, g: 0.98048776, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0, g: 0, b: 0, a: 0}
-  farPointDistance: 0
+  farPointDistance: -1
   fadePointsOverTime: 0
   fadeTime: 0
+  useNormalsForColor: 1
   hardVramLimitInMegabytes: 576
   debugText: {fileID: 0}
 --- !u!4 &765928097
@@ -1075,9 +1076,10 @@ MonoBehaviour:
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
-  farPointDistance: 20
+  farPointDistance: -1
   fadePointsOverTime: 0
   fadeTime: 0
+  useNormalsForColor: 0
   hardVramLimitInMegabytes: 250
   debugText: {fileID: 0}
 --- !u!1 &988206181
