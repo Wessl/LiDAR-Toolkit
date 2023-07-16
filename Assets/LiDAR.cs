@@ -384,7 +384,6 @@ public class LiDAR : MonoBehaviour
         public void Execute()
         {
             Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
-            float twoPI = (float)(2 * Math.PI);
             for (int i = 0; i < FireRate; i++)
             {
                 Vector3 vec3 = new Vector3(rng.NextFloat(-1, 1), rng.NextFloat(-1, 1), rng.NextFloat(-1, 1));

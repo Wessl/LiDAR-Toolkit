@@ -263,7 +263,8 @@ public class DrawPoints : MonoBehaviour
         if (!printInfoToGUI) return;
         float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up.
         float videoMem = (_computeBuffers.ToList().Sum(buffer => buffer.count) * 3 * 4 / (float)MEGABYTE * ratioOfTotalUsed);
-        string text = $"{videoMem} MB of video memory used. {FormatNumber(_bufIndex)} points rendered.";
+        long pointsRendered = _bufIndex > _ComputeBufferSize ? _ComputeBufferSize : _bufIndex;
+        string text = $"{videoMem} MB of video memory used. {FormatNumber(pointsRendered)} points rendered.";
         if (videoMem > DANGEROUS_VIDEO_MEMORY_AMOUNT)
         {
             // todo: is the dangerous video memory amount really set correctly? 
