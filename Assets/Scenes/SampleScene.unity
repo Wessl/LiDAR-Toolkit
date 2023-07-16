@@ -539,10 +539,10 @@ MonoBehaviour:
   defaultScanSFX: {fileID: 0}
   superScanSFX: {fileID: 0}
   audioSource: {fileID: 0}
-  useLineRenderer: 0
+  useLineRenderer: 1
   lineRenderer: {fileID: 765928095}
   lineSpawnSource: {fileID: 765928097}
-  maxLinesPerFrame: 500
+  maxLinesPerFrame: 100
 --- !u!120 &765928095
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -1066,7 +1066,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   printInfoToGUI: 1
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
-  circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
+  circleShader: {fileID: 4800000, guid: 67cf53e5fa69a1541a332fbd8c139587, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
   pointType: 1

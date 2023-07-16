@@ -1,4 +1,4 @@
-Shader "Draw Circles"
+Shader "Draw Circles Experimental"
 {
     Subshader
     {
@@ -78,9 +78,7 @@ Shader "Draw Circles"
             float4 PSMain (shaderdata ps) : SV_Target
             {
                 float2 S = ps.uv*2.0-1.0;
-                if (dot(S.xy, S.xy) > 1.0) discard;
-                ps.color.a = 1;
-                
+                ps.color.a = 1/(dot(S.xy, S.xy)*10)-0.1f;
                 if (fadeTime != 0) ps.color.a *= max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
                 
                 return ps.color;
