@@ -291,7 +291,8 @@ public class LiDAR : MonoBehaviour
                 }
                 else
                 {
-                    pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
+                    // pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
+                    pointColors[i] = GetColliderRelatedUVPointColor(hit);
                 }
 
                 normals[i] = hit.normal;
@@ -302,8 +303,15 @@ public class LiDAR : MonoBehaviour
             if (useLineRenderer) DrawRayBetweenPoints(cameraPos, hit.point);
         }
     }
-    
-   
+
+    private Vector4 GetColliderRelatedUVPointColor(RaycastHit hit)
+    {
+        // This is gonna be a super duper slow implementation because we are getting one pixel at a time like this. Should do it faster at some point. 
+        var texture = (hit.collider.gameObject.GetComponent<MeshRenderer>().material.mainTexture as Texture2D);
+        return texture ? texture.GetPixelBilinear(hit.textureCoord.x, hit.textureCoord.y) : Color.magenta;
+    }
+
+
     private Vector4 GetColliderRelatedMeshRenderMaterialColor(RaycastHit hit)
     {
         var baseMeshRenderer = hit.collider.gameObject.GetComponent<MeshRenderer>();

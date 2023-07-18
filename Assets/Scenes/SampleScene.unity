@@ -458,7 +458,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &765928092
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -759,7 +759,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.05
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -1072,7 +1072,7 @@ MonoBehaviour:
   pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
-  overrideColor: 1
+  overrideColor: 0
   pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
