@@ -526,9 +526,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 500
-  sourcePosition: {fileID: 765928097}
   scanType: 3
-  lidarActivationKey: 323
   coneAngle: 0
   squareScanSize: 0
   fireRate: 10000
@@ -721,6 +719,7 @@ GameObject:
   - component: {fileID: 963194230}
   - component: {fileID: 963194232}
   - component: {fileID: 963194229}
+  - component: {fileID: 963194233}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1018,9 +1017,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 1000
-  sourcePosition: {fileID: 0}
   scanType: 0
-  lidarActivationKey: 323
   coneAngle: 30
   squareScanSize: 0.495
   fireRate: 99999
@@ -1069,7 +1066,7 @@ MonoBehaviour:
   circleShader: {fileID: 4800000, guid: 67cf53e5fa69a1541a332fbd8c139587, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 1
+  pointType: 2
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
   overrideColor: 0
@@ -1082,6 +1079,20 @@ MonoBehaviour:
   useNormalsForColor: 0
   hardVramLimitInMegabytes: 250
   debugText: {fileID: 0}
+--- !u!114 &963194233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f2ac6d7b30b2a1088a94ac53bd2ac17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lidarActivationKey: 323
+  sourcePosition: {fileID: 0}
 --- !u!1 &988206181
 GameObject:
   m_ObjectHideFlags: 0

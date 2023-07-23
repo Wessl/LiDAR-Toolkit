@@ -30,12 +30,9 @@ public class LiDAR : MonoBehaviour
     [Tooltip("The LayerMask to use. Anything in the layers marked here will be hit, rest are ignored and passed through.")]
     public LayerMask layersToHit;
     public int lidarRange = 100;  // This hardly seems to make any difference in how fast physics.raycast functions. Interesting.
-    [Tooltip("The source of the LiDAR rays being emitted. If you are shooting from the camera, use the camera, if a special object is emitting rays, use that object's position.")]
-    public Transform sourcePosition;
-    
+
     [Header("Regular scan")]    
     public ScanType scanType;
-    public KeyCode lidarActivationKey = KeyCode.Mouse0;
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
@@ -83,26 +80,7 @@ public class LiDAR : MonoBehaviour
         if (lineSpawnSource == null) lineSpawnSource = mainCam.transform;
     }
 
-    // Update is called once per frame
-    void LateUpdate()
-    {
-        lineRenderer.positionCount = 0;    // Clear each frame
-        if (Input.GetKeyDown(superScanKey))
-        {
-            StartCoroutine(SuperScan());
-        }
-        else if (Input.GetKey(lidarActivationKey))
-        {
-            DefaultScan();
-        } else if (scanType == ScanType.Sphere)
-        {
-            SphereScan(sourcePosition.position, 100);
-        }
-
-        ScanSizeAreaUpdate(Input.mouseScrollDelta);
-    }
-
-    private void ScanSizeAreaUpdate(Vector2 mouseScrollDelta)
+    public void ScanSizeAreaUpdate(Vector2 mouseScrollDelta)
     {
         var scrollDelta = mouseScrollDelta.y;
         // Cone (for circle)
@@ -116,7 +94,7 @@ public class LiDAR : MonoBehaviour
         OnValidate();
     }
 
-    private void DefaultScan()
+    public void DefaultScan()
     {
         var facingDir = mainCam.gameObject.transform.forward;
         var cameraPos = mainCam.transform.position;
@@ -234,7 +212,7 @@ public class LiDAR : MonoBehaviour
         return vec;
     }
     
-    private IEnumerator SuperScan()
+    public IEnumerator SuperScan()
     {
         // lmao how the fuck did I figure all this out
         float aspect = mainCam.aspect;
