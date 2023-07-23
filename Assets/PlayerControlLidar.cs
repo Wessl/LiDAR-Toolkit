@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(LiDAR))]
 public class PlayerControlLidar : MonoBehaviour
@@ -10,8 +11,8 @@ public class PlayerControlLidar : MonoBehaviour
     private LiDAR lidar;
     public KeyCode lidarActivationKey = KeyCode.Mouse0;
     private LiDAR.ScanType scanType;
-    [Tooltip("The source of the LiDAR rays being emitted. If you are shooting from the camera, use the camera, if a special object is emitting rays, use that object's position.")]
-    public Transform sourcePosition;
+    [FormerlySerializedAs("sourcePosition")] [Tooltip("The source of the LiDAR rays being emitted. If you are shooting from the camera, use the camera, if a special object is emitting rays, use that object's position.")]
+    public Transform sourcePositionTransform;
 
     private void Start()
     {
@@ -29,10 +30,10 @@ public class PlayerControlLidar : MonoBehaviour
         }
         else if (Input.GetKey(lidarActivationKey))
         {
-            lidar.DefaultScan();
+            lidar.DefaultScan(null,null);
         } else if (scanType == LiDAR.ScanType.Sphere)
         {
-            lidar.SphereScan(sourcePosition.position, 100);
+            lidar.SphereScan(sourcePositionTransform, 100);
         }
 
         lidar.ScanSizeAreaUpdate(Input.mouseScrollDelta);

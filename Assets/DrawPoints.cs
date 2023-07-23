@@ -244,6 +244,7 @@ public class DrawPoints : MonoBehaviour
     public void OnValidate()
     {
         // Called whenever values in the inspector are changed
+        _ComputeBufferSize = CalculateCompBufferSize();
         SetUpMaterials();
     }
 

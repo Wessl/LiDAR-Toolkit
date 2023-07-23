@@ -94,10 +94,10 @@ public class LiDAR : MonoBehaviour
         OnValidate();
     }
 
-    public void DefaultScan()
+    public void DefaultScan(Vector3? facingDirOverride, Transform? sourceTransformOverride)
     {
-        var facingDir = mainCam.gameObject.transform.forward;
-        var cameraPos = mainCam.transform.position;
+        var facingDir = facingDirOverride ?? mainCam.gameObject.transform.forward;
+        var cameraPos = sourceTransformOverride ?? mainCam.transform;
         if (scanType == ScanType.Circle)
         {
             CircleScan(cameraPos, facingDir);
@@ -113,12 +113,11 @@ public class LiDAR : MonoBehaviour
         }
     }
     
-    private void SquareScan(Vector3 cameraPos, Vector3 facingDir)
+    private void SquareScan(Transform cameraTransform, Vector3 facingDir)
     {
         // Calculate perpendicular angles to view direction to generate plane upon which points can be generated
-        var mainCamTransform = mainCam.transform;
-        var p = mainCamTransform.up;
-        var q = mainCamTransform.right;
+        var p = cameraTransform.up;
+        var q = cameraTransform.right;
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
         using var pointsInSquare = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
         var job = new BurstPointsInSquare
@@ -132,14 +131,14 @@ public class LiDAR : MonoBehaviour
         };
         job.Schedule().Complete();
 
-        CheckRayIntersections(cameraPos, facingDir, pointsInSquare.ToArray(),
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsInSquare.ToArray(),
             out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
         drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
     }
 
-    public void LineScan(Vector3 cameraPos, Vector3 facingDir)
+    public void LineScan(Transform cameraTransform, Vector3 facingDir)
     {
-        var right = mainCam.transform.right;
+        var right = cameraTransform.transform.right;
         
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
         Vector3[] pointsOnLine = new Vector3[calculatedFireRate];
@@ -147,13 +146,13 @@ public class LiDAR : MonoBehaviour
         {
             pointsOnLine[i] = right * Random.Range(-1f, 1f);
         }
-        CheckRayIntersections(cameraPos, facingDir, pointsOnLine,
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnLine,
             out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
         drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
     }
     
 
-    private void CircleScan(Vector3 cameraPos, Vector3 facingDir)
+    private void CircleScan(Transform cameraTransform, Vector3 facingDir)
     {
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
@@ -170,12 +169,12 @@ public class LiDAR : MonoBehaviour
         };
         job.Schedule().Complete();
 
-        CheckRayIntersections(cameraPos, facingDir, pointsOnDisc.ToArray(),
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnDisc.ToArray(),
                 out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
             drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     // It makes more sense to split these into two
     }
 
-    public void SphereScan(Vector3 sourcePos, float len)
+    public void SphereScan(Transform sourceTransform, float len)
     {
         // Scan in a sphere around me :) 
         var dir = Random.onUnitSphere;
@@ -189,7 +188,7 @@ public class LiDAR : MonoBehaviour
             Output = pointsInSphere
         };
         job.Schedule().Complete();
-        CheckRayIntersections(sourcePos, Vector3.zero, pointsInSphere.ToArray(),
+        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray(),
             out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
         drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     
     }
