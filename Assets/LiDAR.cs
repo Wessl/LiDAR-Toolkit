@@ -36,6 +36,8 @@ public class LiDAR : MonoBehaviour
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
+    private float puckAngleCurr = 0f;
+    public float puckAngleIncrementer = 1f;
     [Tooltip("The length and width of the square scan")]
     [Range(0,1)]
     public float squareScanSize;
@@ -203,7 +205,8 @@ public class LiDAR : MonoBehaviour
         // Maybe in this case the fire rate would have to be the point density in each circle around the axis?
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
         using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
-        var angle = Random.Range(0, 180);
+        var angle = puckAngleCurr % 180;
+        puckAngleCurr += puckAngleIncrementer;
         var unitUpDir = new Vector3(0,1,0);
         var job = new BurstPointsInContinuousSphere
         {

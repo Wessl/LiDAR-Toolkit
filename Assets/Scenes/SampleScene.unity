@@ -214,8 +214,9 @@ MonoBehaviour:
   lidarRange: 500
   scanType: 4
   coneAngle: 0
+  puckAngleIncrementer: 1
   squareScanSize: 0
-  fireRate: 100000
+  fireRate: 25000
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -340,17 +341,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   printInfoToGUI: 0
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
-  circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
+  circleShader: {fileID: 4800000, guid: 67cf53e5fa69a1541a332fbd8c139587, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 0
+  pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.02
-  overrideColor: 0
-  pointColor: {r: 1, g: 0.98048776, b: 0, a: 0}
-  useColorGradient: 0
-  farPointColor: {r: 0, g: 0, b: 0, a: 0}
-  farPointDistance: -1
+  overrideColor: 1
+  pointColor: {r: 1, g: 0.34198838, b: 0, a: 0}
+  useColorGradient: 1
+  farPointColor: {r: 0, g: 1, b: 0.3359518, a: 0}
+  farPointDistance: 20
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 0
@@ -364,7 +365,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 30355588}
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.811, z: 3.35}
+  m_LocalPosition: {x: 4.85, y: 1.26, z: -1.28}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -383,6 +384,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a041f2289c2543178def6d71896aace, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  angleMax: 180
+  angleIncrement: 0.2
 --- !u!1 &352087947
 GameObject:
   m_ObjectHideFlags: 0
@@ -608,6 +611,7 @@ MonoBehaviour:
   lidarRange: 500
   scanType: 1
   coneAngle: 0
+  puckAngleIncrementer: 1
   squareScanSize: 0
   fireRate: 100000
   minimumAcceptableFPS: 20
@@ -1049,6 +1053,7 @@ MonoBehaviour:
   lidarRange: 500
   scanType: 3
   coneAngle: 0
+  puckAngleIncrementer: 1
   squareScanSize: 0
   fireRate: 10000
   minimumAcceptableFPS: 20
@@ -1540,6 +1545,7 @@ MonoBehaviour:
   lidarRange: 1000
   scanType: 0
   coneAngle: 30
+  puckAngleIncrementer: 1
   squareScanSize: 0.495
   fireRate: 99999
   minimumAcceptableFPS: 20
