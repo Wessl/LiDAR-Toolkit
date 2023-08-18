@@ -34,6 +34,9 @@ public class PlayerControlLidar : MonoBehaviour
         } else if (scanType == LiDAR.ScanType.Sphere)
         {
             lidar.SphereScan(sourcePositionTransform, 100);
+        } else if (scanType == LiDAR.ScanType.Puck)
+        {
+            lidar.VelodynePuckScan(sourcePositionTransform, 100);
         }
 
         lidar.ScanSizeAreaUpdate(Input.mouseScrollDelta);

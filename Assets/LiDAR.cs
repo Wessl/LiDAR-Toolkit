@@ -65,10 +65,9 @@ public class LiDAR : MonoBehaviour
     public Transform lineSpawnSource;
     public int maxLinesPerFrame;
     
-    
     public enum ScanType
     {
-        Circle, Line, Square, Sphere
+        Circle, Line, Square, Sphere, Puck
     }
     
     // Start is called before the first frame update
@@ -110,6 +109,9 @@ public class LiDAR : MonoBehaviour
         } else if (scanType == ScanType.Sphere)
         {
             SphereScan(cameraPos, 100);
+        } else if (scanType == ScanType.Puck)
+        {
+            VelodynePuckScan(cameraPos, 100);
         }
     }
     
@@ -180,10 +182,34 @@ public class LiDAR : MonoBehaviour
         var dir = Random.onUnitSphere;
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
         using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
-        var job = new BurstPointsInSphere
+        var job = new BurstPointsInRandomSphere
         {
             FireRate = calculatedFireRate,
             seed = (int)System.DateTime.Now.Ticks,
+            len = len,
+            Output = pointsInSphere
+        };
+        job.Schedule().Complete();
+        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray(),
+            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
+        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     
+    }
+    
+    // It's kind of like the sphere scan, except it creates continues lines around Y axis with some rotation increments.
+    // Creates solid "lines" in circles on the ground around the user, continuously moving upwards
+    public void VelodynePuckScan(Transform sourceTransform, float len)
+    {
+        var dir = Random.onUnitSphere;
+        // Maybe in this case the fire rate would have to be the point density in each circle around the axis?
+        int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
+        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
+        var angle = Random.Range(0, 180);
+        var unitUpDir = new Vector3(0,1,0);
+        var job = new BurstPointsInContinuousSphere
+        {
+            FireRate = calculatedFireRate,
+            AngleAgainstUpDir = angle,
+            UpDir = unitUpDir.normalized,
             len = len,
             Output = pointsInSphere
         };
@@ -355,10 +381,9 @@ public class LiDAR : MonoBehaviour
     }
     
     [BurstCompile(CompileSynchronously = true)]
-    private struct BurstPointsInSphere : IJob
+    private struct BurstPointsInRandomSphere : IJob
     {
         [ReadOnly] public int FireRate;
-        [ReadOnly] public Vector3 sourcePos;
         [ReadOnly] public float len;
 
         [WriteOnly]
@@ -372,6 +397,34 @@ public class LiDAR : MonoBehaviour
             for (int i = 0; i < FireRate; i++)
             {
                 Vector3 vec3 = new Vector3(rng.NextFloat(-1, 1), rng.NextFloat(-1, 1), rng.NextFloat(-1, 1));
+                Output[i] = vec3 * len;
+            }
+        }
+    }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    private struct BurstPointsInContinuousSphere : IJob
+    {
+        [ReadOnly] public int FireRate;
+        [ReadOnly] public Vector3 UpDir;
+        [ReadOnly] public float AngleAgainstUpDir;
+        [ReadOnly] public float len;
+
+        [WriteOnly]
+        public NativeArray<Vector3> Output;
+        
+        public int seed;
+
+        public void Execute()
+        {
+            //Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
+            var newDir = Quaternion.Euler(0, 0, AngleAgainstUpDir) * UpDir;
+            float rotIncrements = 360f / FireRate;
+            float currRot = 0;
+            for (int i = 0; i < FireRate; i++)
+            {
+                currRot += rotIncrements;
+                Vector3 vec3 = (Quaternion.Euler(0, currRot, 0) * newDir);
                 Output[i] = vec3 * len;
             }
         }
