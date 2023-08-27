@@ -18,6 +18,7 @@ spread out the super scan lines line renderer thing
 technically we could make a draw squares very easily by just modifying the shader code in drawCircles fragment shader
 circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.
+check if we need persistent allocation for all the nativearrays.
 
 some kind of startup message on first play that says "hey this is how the thing works. we have 3 point types, use the correct shaders. these pipelines are supported". 
 if they are using hdrp have a popup saying "hey man, by the way, this shit is not supported. "

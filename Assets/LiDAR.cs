@@ -279,12 +279,40 @@ public class LiDAR : MonoBehaviour
     // Todo... Maybe make this handle NativeArrays in order to not have to do .ToArray() from circlescan? Is ToArray even that expensive? 
     private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points, out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals)
     {
+        var pointsHitNative = new NativeArray<Vector3>(points.Length, Allocator.TempJob);
+        var pointColorsNative = new NativeArray<Vector4>(points.Length, Allocator.TempJob);
+        var normalsNative = new NativeArray<Vector3>(points.Length, Allocator.TempJob);
         pointsHit = new Vector3[points.Length];
         pointColors = new Vector4[points.Length];
         normals = new Vector3[points.Length];
+        // make this into an actual nativearray... natively next. i am just testing. 
+        var inputPointsNative = new NativeArray<Vector3>(points.Length, Allocator.TempJob);
+        for (var index = 0; index < points.Length; index++)
+        {
+            var point = points[index];
+            inputPointsNative[index] = point;
+        }
 
+        var job = new BurstRaycasts
+        {
+            InputPoints = inputPointsNative,
+            CameraPos = cameraPos,
+            CameraRay =  cameraRay,
+            LayersToHit = layersToHit,
+            LidarRange = lidarRange,
+            Normals = normalsNative,
+            PointColors = pointColorsNative,
+            PointsHit = pointsHitNative
+            
+        };
+        job.Schedule().Complete();
+        normals = normalsNative.ToArray();
+        pointsHit = pointsHitNative.ToArray();
+        pointColors = pointColorsNative.ToArray();
+        
+        
+        /*
         int i = 0;
-        RaycastHit[] hitBuffer = new RaycastHit[1];
         for (var index = 0; index < points.Length; index++)
         {
             Vector3 point = points[index];
@@ -303,11 +331,10 @@ public class LiDAR : MonoBehaviour
 
                 normals[i] = hit.normal;
                 pointsHit[i++] = hit.point;
-
-                
             }
             if (useLineRenderer) DrawRayBetweenPoints(cameraPos, hit.point);
         }
+        */
     }
 
     private Vector4 GetColliderRelatedUVPointColor(RaycastHit hit)
@@ -382,7 +409,7 @@ public class LiDAR : MonoBehaviour
         // todo Make this work with burst
         // discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
     }
-    
+    #region Burst
     [BurstCompile(CompileSynchronously = true)]
     private struct BurstPointsInRandomSphere : IJob
     {
@@ -429,6 +456,47 @@ public class LiDAR : MonoBehaviour
                 currRot += rotIncrements;
                 Vector3 vec3 = (Quaternion.Euler(0, currRot, 0) * newDir);
                 Output[i] = vec3 * len;
+            }
+        }
+    }
+    
+    [BurstCompile(CompileSynchronously = true)]
+    private struct BurstRaycasts : IJob
+    {
+        // look here> it should be possible somehow just not sure how https://forum.unity.com/threads/how-to-raycast-from-within-a-new-thread-or-job.1134358/
+        [ReadOnly] public NativeArray<Vector3> InputPoints;
+        [ReadOnly] public Vector3 CameraPos;
+        [ReadOnly] public Vector3 CameraRay;
+        [ReadOnly] public float LidarRange;
+        [ReadOnly] public int LayersToHit;
+
+        [WriteOnly]
+        public NativeArray<Vector3> PointsHit;
+        public NativeArray<Vector4> PointColors;
+        public NativeArray<Vector3> Normals;
+        
+        public long seed;
+
+        public void Execute()
+        {
+            for (var index = 0; index < InputPoints.Length; index++)
+            {
+                Vector3 point = InputPoints[index];
+                RaycastHit hit;
+                if (!Physics.Raycast(CameraPos, CameraRay + point, out hit, LidarRange, LayersToHit)) continue;
+                //if (drawPointsRef.overrideColor)
+                //{
+                PointColors[index] = new Vector3(255, 255, 235); //drawPointsRef.pointColor;
+                //}
+                //else
+                //{
+                //    // pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
+                //    pointColors[i] = GetColliderRelatedUVPointColor(hit);
+                //}
+
+                Normals[index] = hit.normal;
+                PointsHit[index++] = hit.point;
+                //if (useLineRenderer) DrawRayBetweenPoints(cameraPos, hit.point);
             }
         }
     }
@@ -487,5 +555,5 @@ public class LiDAR : MonoBehaviour
             Debug.DrawLine(mainCam.transform.position, point + cameraRay, Color.yellow);
         }
     }
-    
+    #endregion
 }

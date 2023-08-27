@@ -11,6 +11,7 @@ public class PuckScanner : MonoBehaviour
     [Range(0,180)]
     public float angleMax = 180;
     public float angleIncrement = 1;
+    public int circlesPerFrame = 10;
 
     private void Start()
     {
@@ -25,6 +26,10 @@ public class PuckScanner : MonoBehaviour
     {
         lineRenderer.positionCount = 0;    // Clear each frame
         Transform myTransform = this.transform;
-        lidar.DefaultScan(myTransform.forward, myTransform);
+        for (int i = 0; i < circlesPerFrame; i++)
+        {
+            lidar.DefaultScan(myTransform.forward, myTransform);
+        }
+        
     }
 }
