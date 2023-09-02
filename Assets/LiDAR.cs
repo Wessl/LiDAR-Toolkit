@@ -3,9 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -275,42 +273,13 @@ public class LiDAR : MonoBehaviour
         }
     }
 
-    
-    // Todo... Maybe make this handle NativeArrays in order to not have to do .ToArray() from circlescan? Is ToArray even that expensive? 
     private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points, out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals)
     {
-        var pointsHitNative = new NativeArray<Vector3>(points.Length, Allocator.TempJob);
-        var pointColorsNative = new NativeArray<Vector4>(points.Length, Allocator.TempJob);
-        var normalsNative = new NativeArray<Vector3>(points.Length, Allocator.TempJob);
         pointsHit = new Vector3[points.Length];
         pointColors = new Vector4[points.Length];
         normals = new Vector3[points.Length];
-        // make this into an actual nativearray... natively next. i am just testing. 
-        var inputPointsNative = new NativeArray<Vector3>(points.Length, Allocator.TempJob);
-        for (var index = 0; index < points.Length; index++)
-        {
-            var point = points[index];
-            inputPointsNative[index] = point;
-        }
 
-        var job = new BurstRaycasts
-        {
-            InputPoints = inputPointsNative,
-            CameraPos = cameraPos,
-            CameraRay =  cameraRay,
-            LayersToHit = layersToHit,
-            LidarRange = lidarRange,
-            Normals = normalsNative,
-            PointColors = pointColorsNative,
-            PointsHit = pointsHitNative
-            
-        };
-        job.Schedule().Complete();
-        normals = normalsNative.ToArray();
-        pointsHit = pointsHitNative.ToArray();
-        pointColors = pointColorsNative.ToArray();
-        
-        
+        ParallelRaycasts(points, cameraPos, cameraRay, out pointsHit, out pointColors, out normals);
         /*
         int i = 0;
         for (var index = 0; index < points.Length; index++)
@@ -459,46 +428,45 @@ public class LiDAR : MonoBehaviour
             }
         }
     }
-    
-    [BurstCompile(CompileSynchronously = true)]
-    private struct BurstRaycasts : IJob
+
+    private void ParallelRaycasts(Vector3[] InputPoints, Vector3 CameraPos, Vector3 CameraRay, out Vector3[] PointsHit, out Vector4[] PointColors, out Vector3[] Normals)
     {
-        // look here> it should be possible somehow just not sure how https://forum.unity.com/threads/how-to-raycast-from-within-a-new-thread-or-job.1134358/
-        [ReadOnly] public NativeArray<Vector3> InputPoints;
-        [ReadOnly] public Vector3 CameraPos;
-        [ReadOnly] public Vector3 CameraRay;
-        [ReadOnly] public float LidarRange;
-        [ReadOnly] public int LayersToHit;
+        // Perform raycasts using RaycastCommand and wait for it to complete
+        // Setup the command and result buffers
+        var results = new NativeArray<RaycastHit>(InputPoints.Length, Allocator.TempJob);
 
-        [WriteOnly]
-        public NativeArray<Vector3> PointsHit;
-        public NativeArray<Vector4> PointColors;
-        public NativeArray<Vector3> Normals;
-        
-        public long seed;
+        var commands = new NativeArray<RaycastCommand>(InputPoints.Length, Allocator.TempJob);
 
-        public void Execute()
+        for (int i = 0; i < InputPoints.Length; i++)
         {
-            for (var index = 0; index < InputPoints.Length; index++)
-            {
-                Vector3 point = InputPoints[index];
-                RaycastHit hit;
-                if (!Physics.Raycast(CameraPos, CameraRay + point, out hit, LidarRange, LayersToHit)) continue;
-                //if (drawPointsRef.overrideColor)
-                //{
-                PointColors[index] = new Vector3(255, 255, 235); //drawPointsRef.pointColor;
-                //}
-                //else
-                //{
-                //    // pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
-                //    pointColors[i] = GetColliderRelatedUVPointColor(hit);
-                //}
+            commands[i] = new RaycastCommand(CameraPos, CameraRay + InputPoints[i], lidarRange, layersToHit);
+        }
 
+        PointsHit = new Vector3[results.Length];
+        PointColors = new Vector4[results.Length];
+        Normals = new Vector3[results.Length];
+        // Schedule the batch of raycasts.
+        JobHandle handle = RaycastCommand.ScheduleBatch(commands, results, 1, default(JobHandle));
+
+        // Wait for the batch processing job to complete
+        handle.Complete();
+        // Create the out arrays????
+
+        // Copy the result. If batchedHit.collider is null there was no hit
+        for (var index = 0; index < results.Length; index++)
+        {
+            var hit = results[index];
+            if (hit.collider != null)
+            {
+                // If hit.collider is not null means there was a hit
+                PointColors[index] = new Vector3(255, 255, 235); // fix this to do proper color management later
                 Normals[index] = hit.normal;
                 PointsHit[index++] = hit.point;
-                //if (useLineRenderer) DrawRayBetweenPoints(cameraPos, hit.point);
             }
         }
+        // todo: This is a lot of allocating and disposing. do it better.
+        results.Dispose();
+        commands.Dispose();
     }
     
     [BurstCompile(CompileSynchronously = true)]
