@@ -39,6 +39,6 @@ public class PlayerControlLidar : MonoBehaviour
             lidar.VelodynePuckScan(sourcePositionTransform, 100);
         }
 
-        lidar.ScanSizeAreaUpdate(Input.mouseScrollDelta);
+        if(Input.mouseScrollDelta.magnitude > 0)lidar.ScanSizeAreaUpdate(Input.mouseScrollDelta);
     }
 }

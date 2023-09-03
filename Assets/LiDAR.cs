@@ -21,6 +21,13 @@ public class LiDAR : MonoBehaviour
     private Camera mainCam;
     private static readonly float discRMax = Mathf.Tan(Mathf.Deg2Rad * 30);
     private NativeArray<Unity.Mathematics.Random> _rngs;
+    // for points hit - dont wanna re-allocate them every time we need em, so set them to a max value
+    Vector3[] RaycastedPointsHit;
+    Vector4[] RaycastedPointColors;
+    Vector3[] RaycastedNormals;
+    private NativeArray<RaycastHit> RaycastedResults;
+    private NativeArray<RaycastCommand> RaycastedCommands;
+    
     
     // General
     [Tooltip("Reference to the DrawPoints object. Necessary since it handles drawing points")]
@@ -69,7 +76,9 @@ public class LiDAR : MonoBehaviour
     {
         Circle, Line, Square, Sphere, Puck
     }
-    
+
+   
+
     // Start is called before the first frame update
     void Start()
     {
@@ -90,7 +99,6 @@ public class LiDAR : MonoBehaviour
         squareScanSize += scrollDelta * 0.01f;  
         if (squareScanSize > 1) squareScanSize = 1;
         if (squareScanSize < 0) squareScanSize = 0;
-        OnValidate();
     }
 
     public void DefaultScan(Vector3? facingDirOverride, Transform? sourceTransformOverride)
@@ -121,7 +129,7 @@ public class LiDAR : MonoBehaviour
         var p = cameraTransform.up;
         var q = cameraTransform.right;
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Time.deltaTime);
-        using var pointsInSquare = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
+        using var pointsInSquare = new NativeArray<Vector3>(calculatedFireRate, Allocator.TempJob);
         var job = new BurstPointsInSquare
         {
             FireRate = calculatedFireRate,
@@ -133,9 +141,8 @@ public class LiDAR : MonoBehaviour
         };
         job.Schedule().Complete();
 
-        CheckRayIntersections(cameraTransform.position, facingDir, pointsInSquare.ToArray(),
-            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
-        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsInSquare.ToArray());
+        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
     }
 
     public void LineScan(Transform cameraTransform, Vector3 facingDir)
@@ -148,9 +155,8 @@ public class LiDAR : MonoBehaviour
         {
             pointsOnLine[i] = right * Random.Range(-1f, 1f);
         }
-        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnLine,
-            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
-        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnLine);
+        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
     }
     
 
@@ -160,7 +166,7 @@ public class LiDAR : MonoBehaviour
         var p = GetPerpendicular(facingDir);
         var q = Vector3.Cross(facingDir.normalized, p);
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
-        using var pointsOnDisc = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
+        using var pointsOnDisc = new NativeArray<Vector3>(calculatedFireRate, Allocator.TempJob);
         var job = new BurstPointsOnDisc
         {
             FireRate = calculatedFireRate,
@@ -171,9 +177,8 @@ public class LiDAR : MonoBehaviour
         };
         job.Schedule().Complete();
 
-        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnDisc.ToArray(),
-                out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
-            drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     // It makes more sense to split these into two
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnDisc.ToArray());
+            drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);     // It makes more sense to split these into two
     }
 
     public void SphereScan(Transform sourceTransform, float len)
@@ -181,7 +186,7 @@ public class LiDAR : MonoBehaviour
         // Scan in a sphere around me :) 
         var dir = Random.onUnitSphere;
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
-        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
+        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.TempJob);
         var job = new BurstPointsInRandomSphere
         {
             FireRate = calculatedFireRate,
@@ -190,9 +195,8 @@ public class LiDAR : MonoBehaviour
             Output = pointsInSphere
         };
         job.Schedule().Complete();
-        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray(),
-            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
-        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     
+        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray());
+        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);   
     }
     
     // It's kind of like the sphere scan, except it creates continues lines around Y axis with some rotation increments.
@@ -202,7 +206,7 @@ public class LiDAR : MonoBehaviour
         var dir = Random.onUnitSphere;
         // Maybe in this case the fire rate would have to be the point density in each circle around the axis?
         int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
-        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.Persistent);
+        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.TempJob);
         var angle = puckAngleCurr % 180;
         puckAngleCurr += puckAngleIncrementer;
         var unitUpDir = new Vector3(0,1,0);
@@ -215,13 +219,10 @@ public class LiDAR : MonoBehaviour
             Output = pointsInSphere
         };
         job.Schedule().Complete();
-        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray(),
-            out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
-        drawPointsRef.UploadPointData(pointsHit, pointColors, normals);     
+        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray());
+        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
     }
     
-    
-    // Now featuring bursty randomization
     private static Vector3 GenRandPointDisc(Vector3 p, Vector3 q, ref Unity.Mathematics.Random rng)
     {
         // Generate random point in the PQ plane disc
@@ -265,45 +266,52 @@ public class LiDAR : MonoBehaviour
                 var v =  (Mathf.Cos(meta) * upDir/(magic) + Mathf.Sin((float)theta) * q/(magic/aspect));    // instead of magic numbers use randoms that are half of cell size and use screen ratio for other numbers
                 pointsOnPlane[j] = v;
             }
-            CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane,
-                out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals);
-            drawPointsRef.UploadPointData(pointsHit, pointColors, normals);  
+            CheckRayIntersections(cameraPos, cameraRay-cameraPos, pointsOnPlane);
+            drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);  
             var timePassed = Time.time - timeBefore;
             yield return new WaitForSecondsRealtime(superScanWaitTime - timePassed);
         }
     }
 
-    private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points, out Vector3[] pointsHit, out Vector4[] pointColors, out Vector3[] normals)
+    private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
-        pointsHit = new Vector3[points.Length];
-        pointColors = new Vector4[points.Length];
-        normals = new Vector3[points.Length];
-
-        ParallelRaycasts(points, cameraPos, cameraRay, out pointsHit, out pointColors, out normals);
-        /*
-        int i = 0;
-        for (var index = 0; index < points.Length; index++)
+        RaycastedNormals = new Vector3[points.Length];
+        RaycastedPointColors = new Vector4[points.Length];
+        RaycastedPointsHit = new Vector3[points.Length];
+        RaycastedResults = new NativeArray<RaycastHit>(points.Length, Allocator.Persistent);
+        RaycastedCommands = new NativeArray<RaycastCommand>(points.Length, Allocator.Persistent);
+        // Perform raycasts using RaycastCommand and wait for it to complete
+        for (int i = 0; i < points.Length; i++)
         {
-            Vector3 point = points[index];
-            RaycastHit hit;
-            if (Physics.Raycast(cameraPos, cameraRay + point, out hit, lidarRange, layersToHit))
-            {
-                if (drawPointsRef.overrideColor)
-                {
-                    pointColors[i] = drawPointsRef.pointColor;
-                }
-                else
-                {
-                    // pointColors[i] = GetColliderRelatedMeshRenderMaterialColor(hit);
-                    pointColors[i] = GetColliderRelatedUVPointColor(hit);
-                }
-
-                normals[i] = hit.normal;
-                pointsHit[i++] = hit.point;
-            }
-            if (useLineRenderer) DrawRayBetweenPoints(cameraPos, hit.point);
+            RaycastedCommands[i] = new RaycastCommand(cameraPos, cameraRay + points[i], lidarRange, layersToHit);
         }
-        */
+        
+        // Schedule the batch of raycasts.
+        // Somehow clear out the parts of the commands that I don't use... maybe tricky? hm. 
+        JobHandle handle = RaycastCommand.ScheduleBatch(RaycastedCommands, RaycastedResults, 1, default(JobHandle));
+
+        // Wait for the batch processing job to complete
+        handle.Complete();
+        // Create the out arrays????
+
+        // Copy the result. If batchedHit.collider is null there was no hit
+        for (var index = 0; index < RaycastedResults.Length; index++)
+        {
+            var hit = RaycastedResults[index];
+            if (hit.collider != null)
+            {
+                // If hit.collider is not null means there was a hit
+                if (drawPointsRef.overrideColor) RaycastedPointColors[index] = drawPointsRef.pointColor;
+                else RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                 // fix this to do proper color management later
+                RaycastedNormals[index] = hit.normal;
+                RaycastedPointsHit[index++] = hit.point;
+            }
+        }
+
+        RaycastedResults.Dispose();
+        RaycastedCommands.Dispose();
+
     }
 
     private Vector4 GetColliderRelatedUVPointColor(RaycastHit hit)
@@ -372,12 +380,6 @@ public class LiDAR : MonoBehaviour
         perpendicular[midIndex] = -max;
         return perpendicular.normalized;
     }
-
-    private void OnValidate()
-    {
-        // todo Make this work with burst
-        // discRMax = Mathf.Tan(Mathf.Deg2Rad * coneAngle);
-    }
     #region Burst
     [BurstCompile(CompileSynchronously = true)]
     private struct BurstPointsInRandomSphere : IJob
@@ -429,46 +431,6 @@ public class LiDAR : MonoBehaviour
         }
     }
 
-    private void ParallelRaycasts(Vector3[] InputPoints, Vector3 CameraPos, Vector3 CameraRay, out Vector3[] PointsHit, out Vector4[] PointColors, out Vector3[] Normals)
-    {
-        // Perform raycasts using RaycastCommand and wait for it to complete
-        // Setup the command and result buffers
-        var results = new NativeArray<RaycastHit>(InputPoints.Length, Allocator.TempJob);
-
-        var commands = new NativeArray<RaycastCommand>(InputPoints.Length, Allocator.TempJob);
-
-        for (int i = 0; i < InputPoints.Length; i++)
-        {
-            commands[i] = new RaycastCommand(CameraPos, CameraRay + InputPoints[i], lidarRange, layersToHit);
-        }
-
-        PointsHit = new Vector3[results.Length];
-        PointColors = new Vector4[results.Length];
-        Normals = new Vector3[results.Length];
-        // Schedule the batch of raycasts.
-        JobHandle handle = RaycastCommand.ScheduleBatch(commands, results, 1, default(JobHandle));
-
-        // Wait for the batch processing job to complete
-        handle.Complete();
-        // Create the out arrays????
-
-        // Copy the result. If batchedHit.collider is null there was no hit
-        for (var index = 0; index < results.Length; index++)
-        {
-            var hit = results[index];
-            if (hit.collider != null)
-            {
-                // If hit.collider is not null means there was a hit
-                PointColors[index] = new Vector3(255, 255, 235); // fix this to do proper color management later
-                Normals[index] = hit.normal;
-                PointsHit[index++] = hit.point;
-            }
-        }
-        // todo: This is a lot of allocating and disposing. do it better.
-        results.Dispose();
-        commands.Dispose();
-    }
-    
     [BurstCompile(CompileSynchronously = true)]
     private struct BurstPointsOnDisc : IJob
     {

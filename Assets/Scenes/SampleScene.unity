@@ -216,7 +216,7 @@ MonoBehaviour:
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
-  fireRate: 25000
+  fireRate: 10000
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -346,7 +346,7 @@ MonoBehaviour:
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
   pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  pointScale: 0.02
+  pointScale: 0.2
   overrideColor: 1
   pointColor: {r: 1, g: 0.34198838, b: 0, a: 0}
   useColorGradient: 1
@@ -385,7 +385,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   angleMax: 180
-  angleIncrement: 0.2
+  angleIncrement: 1
+  circlesPerFrame: 60
 --- !u!1 &352087947
 GameObject:
   m_ObjectHideFlags: 0
