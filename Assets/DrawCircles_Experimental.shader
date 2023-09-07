@@ -31,7 +31,7 @@ Shader "Draw Circles Experimental"
                 float2 uv : TEXCOORD0;
                 uint instance : SV_INSTANCEID;
             };
-#if _SM <= 30            
+#if _SM >= 30            
             float Mod(float x, float y)
             {
                 return x - y * floor(x/y);

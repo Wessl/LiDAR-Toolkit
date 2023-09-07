@@ -22,7 +22,7 @@ public class PuckScanner : MonoBehaviour
     }
 
     // Maybe instead of FixedUpdate find some other way of doing this...
-    void FixedUpdate()
+    void Update()
     {
         lineRenderer.positionCount = 0;    // Clear each frame
         Transform myTransform = this.transform;

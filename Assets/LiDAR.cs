@@ -302,7 +302,11 @@ public class LiDAR : MonoBehaviour
             {
                 // If hit.collider is not null means there was a hit
                 if (drawPointsRef.overrideColor) RaycastedPointColors[index] = drawPointsRef.pointColor;
-                else RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                // do some funky temp stuff just because we can
+                var y = hit.point.y;
+
+                RaycastedPointColors[index] = tempColorScalerForLidar(y, 2);
+                // else RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
                  // fix this to do proper color management later
                 RaycastedNormals[index] = hit.normal;
                 RaycastedPointsHit[index++] = hit.point;
@@ -311,9 +315,32 @@ public class LiDAR : MonoBehaviour
 
         RaycastedResults.Dispose();
         RaycastedCommands.Dispose();
-
     }
 
+    float scaleFloat(float inp, float max)
+    {
+        if (inp > max) return max;
+        return inp / max;
+    }
+
+    Vector4 tempColorScalerForLidar(float inputHeight, float yMax)
+    {
+        // ia m too dumb to math
+        if (inputHeight > yMax / 2) return Color.Lerp(Color.blue, Color.yellow, map(inputHeight, 0, 1, 0, 1));
+        else return Color.Lerp(Color.yellow, Color.red, map(inputHeight, 1, 2, 0, 1));
+    }
+    
+    float map(float s, float a1, float a2, float b1, float b2)
+    {
+        return b1 + (s-a1)*(b2-b1)/(a2-a1);
+    }
+
+    float WithinRange(float x, float a, float b)
+    {
+        return (Math.Sign((x - a) * (b - x)) + 1)/2f;
+    }
+
+    // todo: jobify this
     private Vector4 GetColliderRelatedUVPointColor(RaycastHit hit)
     {
         // This is gonna be a super duper slow implementation because we are getting one pixel at a time like this. Should do it faster at some point. 
