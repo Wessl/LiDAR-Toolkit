@@ -20,7 +20,7 @@ Shader "Unlit/DrawMeshBRP" {
 		StructuredBuffer<float3> normalbuffer;
 		#endif
 		float fadeTime;
-		#include "Assets/PointGPU.hlsl"
+		#include "Assets/Scripts/Shaders/PointGPU.hlsl"
 		
 		
 		struct Input {

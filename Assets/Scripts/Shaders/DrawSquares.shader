@@ -65,7 +65,7 @@ Shader "Draw Squares"
                 // This assumes we are only setting either the normal buffer or the color buffer 
                 vs.color = float4(normalbuffer[instance],1) + colorbuffer[instance];
                 vs.color = lerp(vs.color, farcolor, (dist/fardist));
-                // billboard. why does this frankensteiny mess even work remotely
+                // Billboard
                 float4 pos2 = mul(UNITY_MATRIX_P, 
                 float4(UnityObjectToViewPos(float3(0.0,0.0,0.0)),1.0)
                 + float4(sign(u)-0.5, sign(v)-0.5, 0.0, 0.0)*2
@@ -79,10 +79,17 @@ Shader "Draw Squares"
  
             float4 PSMain (shaderdata ps) : SV_Target
             {
-                // Heavily based on the circle implementation - should just be a case of changing when to cut off the mesh, right?
                 float2 S = ps.uv*2.0-1.0;
-                //ps.color.a = 1/(dot(S.xy, S.xy)*10)-0.1f;
-                ps.color.a = 1;
+                // hermite gradient 
+                float gradL = 1.0 - smoothstep(0.0, 0.25, ps.uv.x);
+                float gradR = smoothstep(0.75, 1.0, ps.uv.x);
+                float gradT = 1.0 - smoothstep(0.0, 0.25, ps.uv.y);
+                float gradB = smoothstep(0.75, 1.0, ps.uv.y);
+
+                
+                ps.color.a = 1-(gradB + gradL + gradT + gradR);
+            
+                
                 if (fadeTime != 0) ps.color.a *= max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
                 
                 return ps.color;
