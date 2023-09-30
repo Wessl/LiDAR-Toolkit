@@ -18,13 +18,14 @@ public class DrawPoints : MonoBehaviour
     [Header("Shader File References")]
     public Shader pointShader;
     public Shader circleShader;
+    public Shader squareShader;
     public Shader meshShaderURP;
     public Shader meshShaderBRP; 
     
     // Choose points (pixel size), circles (billboarded, world size), or meshes (3D, world size)
     public enum PointType
     {
-        PixelPoint, CirclePoint, MeshPoint
+        PixelPoint, CirclePoint, MeshPoint, SquarePoint
     }
     [FormerlySerializedAs("_pointType")]
     [Header("Point type options")]
@@ -127,7 +128,7 @@ public class DrawPoints : MonoBehaviour
 
     public void SetUpMaterials()
     {
-        if (pointShader == null || circleShader == null || meshShaderBRP == null || meshShaderBRP == null)
+        if (pointShader == null || circleShader == null || meshShaderBRP == null || meshShaderBRP == null || squareShader == null)
         {
             Debug.LogWarning("Can't set up materials when shader references are empty, please set them. ");
             return;
@@ -147,6 +148,10 @@ public class DrawPoints : MonoBehaviour
         {
             _material = GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset ? new Material(meshShaderURP) : new Material(meshShaderBRP);
             _material.enableInstancing = true;
+            _material.SetFloat("_Scale", pointScale);
+        } else if (pointType == PointType.SquarePoint)
+        {
+            _material = new Material(squareShader);
             _material.SetFloat("_Scale", pointScale);
         }
         if (!useColorGradient) farPointDistance = -1;
@@ -235,7 +240,11 @@ public class DrawPoints : MonoBehaviour
         else if (pointType == PointType.CirclePoint)
         {
             Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, count);
-        } else if (pointType == PointType.MeshPoint)
+        } else if (pointType == PointType.SquarePoint)
+        {
+            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, count);
+        }
+        else if (pointType == PointType.MeshPoint)
         {
             Graphics.DrawMeshInstancedProcedural(pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
         }
