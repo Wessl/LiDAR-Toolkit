@@ -305,8 +305,8 @@ public class LiDAR : MonoBehaviour
                 // do some funky temp stuff just because we can
                 var y = hit.point.y;
 
-                RaycastedPointColors[index] = tempColorScalerForLidar(y, 2);
-                // else RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                //RaycastedPointColors[index] = tempColorScalerForLidar(y, 2);
+                RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
                  // fix this to do proper color management later
                 RaycastedNormals[index] = hit.normal;
                 RaycastedPointsHit[index++] = hit.point;
