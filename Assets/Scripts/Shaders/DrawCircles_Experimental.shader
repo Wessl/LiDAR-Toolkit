@@ -23,6 +23,7 @@ Shader "Draw Circles Experimental"
             float4 camerapos;
             float dist;
             float fardist;
+            bool _SmoothEdges;
 
             struct shaderdata
             {
@@ -80,7 +81,7 @@ Shader "Draw Circles Experimental"
             float4 PSMain (shaderdata ps) : SV_Target
             {
                 float2 S = ps.uv*2.0-1.0;
-                ps.color.a = 1/(dot(S.xy, S.xy)*10)-0.1f;
+                ps.color.a = _SmoothEdges ? 1/(dot(S.xy, S.xy)*10)-0.1f : 1/dot(S.xy, S.xy);
                 if (fadeTime != 0) ps.color.a *= max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
                 
                 return ps.color;

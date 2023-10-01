@@ -13,7 +13,8 @@ Shader "Unlit/DrawMeshBRP" {
 		#pragma instancing_options assumeuniformscaling procedural:ConfigureProcedural
 		#pragma editor_sync_compilation
 		#pragma target 5.0
-		
+
+		// wot. why are these defined here, and in the pointgpu hlsl. and why only whne d3d11?
 		#ifdef SHADER_API_D3D11
 		StructuredBuffer<float4> colorbuffer;
 		StructuredBuffer<float> timebuffer;

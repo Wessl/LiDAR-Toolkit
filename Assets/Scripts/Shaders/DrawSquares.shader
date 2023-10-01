@@ -23,6 +23,7 @@ Shader "Draw Squares"
             float4 camerapos;
             float dist;
             float fardist;
+            bool _SmoothEdges;
 
             struct shaderdata
             {
@@ -86,9 +87,8 @@ Shader "Draw Squares"
                 float gradT = 1.0 - smoothstep(0.0, 0.25, ps.uv.y);
                 float gradB = smoothstep(0.75, 1.0, ps.uv.y);
 
-                
-                ps.color.a = 1-(gradB + gradL + gradT + gradR);
-            
+                // as long as you use the grads, you get smooth edges, dont use grads, get regular square
+                ps.color.a = _SmoothEdges ? 1 - (gradB + gradL + gradT + gradR) : 1;
                 
                 if (fadeTime != 0) ps.color.a *= max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
                 

@@ -35,6 +35,9 @@ public class DrawPoints : MonoBehaviour
     public Mesh pointMesh;
     [SerializeField][Range(0.0f, 1.0f)] [Tooltip("Size of spheres and meshes (Pixels are constant in size)")] 
     private float pointScale;
+    [SerializeField]
+    [Tooltip("Smooth out the edges of applicable points. Currently supports circle and square-type points.")]
+    private bool smoothEdges;
     
     
     // Color overrides
@@ -142,6 +145,7 @@ public class DrawPoints : MonoBehaviour
         {
             _material = new Material(circleShader);
             _material.SetFloat("_Scale", pointScale);
+            _material.SetInt("_SmoothEdges", smoothEdges ? 1 : 0);
         }
         
         else if (pointType == PointType.MeshPoint)
@@ -153,6 +157,7 @@ public class DrawPoints : MonoBehaviour
         {
             _material = new Material(squareShader);
             _material.SetFloat("_Scale", pointScale);
+            _material.SetInt("_SmoothEdges", smoothEdges ? 1 : 0);
         }
         if (!useColorGradient) farPointDistance = -1;
         _material.SetColor("farcolor", farPointColor);
