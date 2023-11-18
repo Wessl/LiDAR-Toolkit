@@ -305,8 +305,8 @@ public class LiDAR : MonoBehaviour
                 // do some funky temp stuff just because we can
                 var y = hit.point.y;
 
-                //RaycastedPointColors[index] = tempColorScalerForLidar(y, 2);
-                RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                RaycastedPointColors[index] = TempColorScalerForLidar(y, 5);
+                //RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
                  // fix this to do proper color management later
                 RaycastedNormals[index] = hit.normal;
                 RaycastedPointsHit[index++] = hit.point;
@@ -323,17 +323,23 @@ public class LiDAR : MonoBehaviour
         return inp / max;
     }
 
-    Vector4 tempColorScalerForLidar(float inputHeight, float yMax)
+    Vector4 TempColorScalerForLidar(float inputHeight, float yMax)
     {
-        // ia m too dumb to math
-        if (inputHeight > yMax / 2) return Color.Lerp(Color.blue, Color.yellow, map(inputHeight, 0, 1, 0, 1));
-        else return Color.Lerp(Color.yellow, Color.red, map(inputHeight, 1, 2, 0, 1));
+        float normalizedHeight = Mathf.Clamp01(inputHeight / yMax);
+    
+        if (normalizedHeight <= 0.5f)
+        {
+            // Blue to Yellow transition
+            return Color.Lerp(Color.blue, Color.yellow, normalizedHeight * 2);
+        }
+        else
+        {
+            // Yellow to Red transition
+            return Color.Lerp(Color.yellow, Color.red, (normalizedHeight - 0.5f) * 2);
+        }
     }
     
-    float map(float s, float a1, float a2, float b1, float b2)
-    {
-        return b1 + (s-a1)*(b2-b1)/(a2-a1);
-    }
+    
 
     float WithinRange(float x, float a, float b)
     {
