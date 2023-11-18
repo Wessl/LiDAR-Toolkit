@@ -31,13 +31,14 @@ Shader "Draw Circles"
                 float2 uv : TEXCOORD0;
                 uint instance : SV_INSTANCEID;
             };
-#if _SM <= 30            
-            float Mod(float x, float y)
+            
+#ifdef GL_ARB_gpu_shader_fp64           
+            double Mod(double x, double y)
             {
                 return x - y * floor(x/y);
             }
 #else 
-            double Mod(double x, double y)
+            float Mod(float x, float y)
             {
                 return x - y * floor(x/y);
             }

@@ -33,25 +33,17 @@ Shader "Draw Circles Experimental"
                 uint instance : SV_INSTANCEID;
             };
 
-#ifdef GL_ARB_gpu_shader_fp64
+//#ifdef GL_ARB_gpu_shader_fp64
             double Mod(double x, double y)
             {
                 return x - y * floor(x/y);
             }
-#else
-            float Mod(float x, float y)
-            {
-                return x - y * floor(x/y);
-            }
-#endif
-
-            // not used anymore but it looks cool...!
-            float3 hash(float p)
-            {
-                float3 p3 = frac(p.xxx * float3(.1239, .1237, .2367));
-                p3 += dot(p3, p3.yzx+63.33);
-                return frac((p3.xxy+p3.yzz)*p3.zyx);
-            }
+//#else
+//            float Mod(float x, float y)
+//            {
+//                return x - y * floor(x/y);
+//            }
+//#endif
             
             shaderdata VSMain (uint id:SV_VertexID, uint instance:SV_INSTANCEID)
             {
@@ -61,12 +53,11 @@ Shader "Draw Circles Experimental"
                 float u = sign(Mod(20.0, internalMod));
                 float v = sign(Mod(18.0, internalMod));
                 vs.uv = float2(u,v);
-                float4 position = float4(float3(sign(u) - 0.5, 0.0, sign(v) - 0.5) * _Scale + center, 1.0);
                 dist = distance(camerapos, center);
                 // This assumes we are only setting either the normal buffer or the color buffer 
                 vs.color = float4(normalbuffer[instance],1) + colorbuffer[instance];
                 vs.color = lerp(vs.color, farcolor, (dist/fardist));
-                // billboard. why does this frankensteiny mess even work remotely
+                // billboard.
                 float4 pos2 = mul(UNITY_MATRIX_P, 
                 float4(UnityObjectToViewPos(float3(0.0,0.0,0.0)),1.0)
                 + float4(sign(u)-0.5, sign(v)-0.5, 0.0, 0.0)*2
@@ -81,7 +72,9 @@ Shader "Draw Circles Experimental"
             float4 PSMain (shaderdata ps) : SV_Target
             {
                 float2 S = ps.uv*2.0-1.0;
-                ps.color.a = _SmoothEdges ? 1/(dot(S.xy, S.xy)*10)-0.1f : 1/dot(S.xy, S.xy);
+                ps.color.a = 1;
+                if (_SmoothEdges) ps.color.a = 1/(dot(S.xy, S.xy)*10)-0.1f;
+                else if (dot(S.xy, S.xy) > 1.0) discard;
                 if (fadeTime != 0) ps.color.a *= max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
                 
                 return ps.color;
