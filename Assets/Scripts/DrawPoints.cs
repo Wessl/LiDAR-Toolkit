@@ -210,7 +210,7 @@ public class DrawPoints : MonoBehaviour
                 _normalBuffer.SetData(normals, 0, bufferStartIndex, amount);
             else
                 _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
-        }
+        }   
         
         _bufIndex += amount;
         _canStartRendering = true;

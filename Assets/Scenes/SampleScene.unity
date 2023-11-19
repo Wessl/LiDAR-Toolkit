@@ -216,7 +216,7 @@ MonoBehaviour:
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
-  fireRate: 10000
+  fireRate: 0
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -616,7 +616,7 @@ MonoBehaviour:
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
-  fireRate: 100000
+  fireRate: 0
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -1060,7 +1060,7 @@ MonoBehaviour:
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
-  fireRate: 10000
+  fireRate: 0
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -1550,12 +1550,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 1000
-  scanType: 0
+  scanType: 4
   coneAngle: 30
-  puckAngleIncrementer: 0.2
-  squareScanSize: 0.19
-  fireRate: 300000
-  minimumAcceptableFPS: 20
+  puckAngleIncrementer: 0.5
+  squareScanSize: 0.202
+  fireRate: 1000
+  minimumAcceptableFPS: 1
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -1613,7 +1613,7 @@ MonoBehaviour:
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 0
-  hardVramLimitInMegabytes: 50
+  hardVramLimitInMegabytes: 500
   debugText: {fileID: 0}
 --- !u!114 &963194233
 MonoBehaviour:

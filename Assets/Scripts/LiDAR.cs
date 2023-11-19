@@ -21,6 +21,7 @@ public class LiDAR : MonoBehaviour
     private Camera mainCam;
     private static readonly float discRMax = Mathf.Tan(Mathf.Deg2Rad * 30);
     private NativeArray<Unity.Mathematics.Random> _rngs;
+    private float puckAngleCurrPlayerControl = 0;
     // for points hit - dont wanna re-allocate them every time we need em, so set them to a max value
     Vector3[] RaycastedPointsHit;
     Vector4[] RaycastedPointColors;
@@ -41,13 +42,13 @@ public class LiDAR : MonoBehaviour
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
-    private float puckAngleCurr = 0f;
+    //private float puckAngleCurr = 0f;
     public float puckAngleIncrementer = 1f;
     [Tooltip("The length and width of the square scan")]
     [Range(0,1)]
     public float squareScanSize;
     [Tooltip("The amount of points to create per second")]
-    public float fireRate;
+    public int fireRate;
     [Tooltip("Will artificially limit the amount of new points created per second if FPS gets below this limit.")]
     public int minimumAcceptableFPS = 20;
     
@@ -119,7 +120,7 @@ public class LiDAR : MonoBehaviour
             SphereScan(cameraPos, 100);
         } else if (scanType == ScanType.Puck)
         {
-            VelodynePuckScan(cameraPos, 100);
+            VelodynePuckScan(cameraPos, 100, ref puckAngleCurrPlayerControl);
         }
     }
     
@@ -201,18 +202,16 @@ public class LiDAR : MonoBehaviour
     
     // It's kind of like the sphere scan, except it creates continues lines around Y axis with some rotation increments.
     // Creates solid "lines" in circles on the ground around the user, continuously moving upwards
-    public void VelodynePuckScan(Transform sourceTransform, float len)
+    public void VelodynePuckScan(Transform sourceTransform, float len, ref float puckAngleCurr)
     {
-        var dir = Random.onUnitSphere;
-        // Maybe in this case the fire rate would have to be the point density in each circle around the axis?
-        int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
-        using var pointsInSphere = new NativeArray<Vector3>(calculatedFireRate, Allocator.TempJob);
+        //int calculatedFireRate = (int)Mathf.Ceil(fireRate * Mathf.Min(1f/minimumAcceptableFPS,Time.deltaTime));
+        using var pointsInSphere = new NativeArray<Vector3>(fireRate, Allocator.TempJob);
         var angle = puckAngleCurr % 180;
         puckAngleCurr += puckAngleIncrementer;
         var unitUpDir = new Vector3(0,1,0);
         var job = new BurstPointsInContinuousSphere
         {
-            FireRate = calculatedFireRate,
+            FireRate = fireRate,
             AngleAgainstUpDir = angle,
             UpDir = unitUpDir.normalized,
             len = len,
