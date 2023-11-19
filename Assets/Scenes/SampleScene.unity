@@ -1552,9 +1552,9 @@ MonoBehaviour:
   lidarRange: 1000
   scanType: 0
   coneAngle: 30
-  puckAngleIncrementer: 1
-  squareScanSize: 0.495
-  fireRate: 99999
+  puckAngleIncrementer: 0.2
+  squareScanSize: 0.19
+  fireRate: 300000
   minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
@@ -1613,7 +1613,7 @@ MonoBehaviour:
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 0
-  hardVramLimitInMegabytes: 250
+  hardVramLimitInMegabytes: 50
   debugText: {fileID: 0}
 --- !u!114 &963194233
 MonoBehaviour:
@@ -1628,7 +1628,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lidarActivationKey: 323
-  sourcePositionTransform: {fileID: 0}
+  sourcePositionTransform: {fileID: 1047528404}
 --- !u!1 &988206181
 GameObject:
   m_ObjectHideFlags: 0

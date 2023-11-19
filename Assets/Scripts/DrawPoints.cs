@@ -169,22 +169,47 @@ public class DrawPoints : MonoBehaviour
     public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
     {
         int amount = pointPositions.Length;
-        int bufferStartIndex = _bufIndex % (_ComputeBufferSize - amount);
-        float[] timestamps = new float[amount];
+        int bufferStartIndex = _bufIndex % (_ComputeBufferSize);
         
-        if (fadePointsOverTime)
+        // We need to wrap around if surpass size - essentially implementing a circular buffer
+        if (bufferStartIndex + amount > _ComputeBufferSize)
         {
-            for (int i = 0; i < amount; i++) timestamps[i] = Time.time;
-            _timeBuffer.SetData(timestamps, 0, bufferStartIndex, amount);
-        }
-        _posBuffer.SetData (pointPositions, 0, bufferStartIndex, amount);
-        if (useNormalsForColor)
-        {
-            _normalBuffer.SetData(normals, 0, bufferStartIndex, amount);
+            var firstChunkSize = _ComputeBufferSize - bufferStartIndex;
+            var secondChunkSize = amount - firstChunkSize;
+            if (fadePointsOverTime)
+            {
+                float[] timestamps = new float[amount];
+                for (int i = 0; i < amount; i++) timestamps[i] = Time.time;
+                _timeBuffer.SetData(timestamps, 0, bufferStartIndex, firstChunkSize);
+                _timeBuffer.SetData(timestamps, firstChunkSize, 0, secondChunkSize);
+            }
+            _posBuffer.SetData(pointPositions, 0, bufferStartIndex, firstChunkSize);
+            _posBuffer.SetData(pointPositions, firstChunkSize, 0, secondChunkSize);
+            if (useNormalsForColor)
+            {
+                _normalBuffer.SetData(normals, 0, bufferStartIndex, firstChunkSize);
+                _normalBuffer.SetData(normals, firstChunkSize, 0, secondChunkSize);
+            }
+            else
+            {
+                _colorBuffer.SetData(colors, 0, bufferStartIndex, firstChunkSize);
+                _colorBuffer.SetData(colors, firstChunkSize, 0, secondChunkSize);
+            }
         }
         else
         {
-            _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
+            _posBuffer.SetData(pointPositions, 0, bufferStartIndex, amount);
+            if (fadePointsOverTime)
+            {
+                float[] timestamps = new float[amount];
+                for (int i = 0; i < amount; i++) timestamps[i] = Time.time;
+                _timeBuffer.SetData(timestamps, 0, bufferStartIndex, amount);
+            }
+            _posBuffer.SetData(pointPositions, 0, bufferStartIndex, amount);
+            if (useNormalsForColor)
+                _normalBuffer.SetData(normals, 0, bufferStartIndex, amount);
+            else
+                _colorBuffer.SetData(colors, 0, bufferStartIndex, amount);
         }
         
         _bufIndex += amount;
@@ -201,6 +226,11 @@ public class DrawPoints : MonoBehaviour
             {
                 RenderPointsNow();
             }
+        }
+        // Clearing easier
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ClearAllPoints();
         }
     }
     
