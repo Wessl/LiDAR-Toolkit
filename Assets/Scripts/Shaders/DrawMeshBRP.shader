@@ -16,9 +16,9 @@ Shader "Unlit/DrawMeshBRP" {
 
 		// wot. why are these defined here, and in the pointgpu hlsl. and why only whne d3d11?
 		#ifdef SHADER_API_D3D11
-		StructuredBuffer<float4> colorbuffer;
-		StructuredBuffer<float> timebuffer;
-		StructuredBuffer<float3> normalbuffer;
+		//StructuredBuffer<float4> colorbuffer;
+		//StructuredBuffer<float> timebuffer;
+		//StructuredBuffer<float3> normalbuffer;
 		#endif
 		float fadeTime;
 		#include "Assets/Scripts/Shaders/PointGPU.hlsl"

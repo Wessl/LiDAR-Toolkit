@@ -151,6 +151,7 @@ public class DrawPoints : MonoBehaviour
         else if (pointType == PointType.MeshPoint)
         {
             _material = GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset ? new Material(meshShaderURP) : new Material(meshShaderBRP);
+            Debug.Log("what is the renderpipeline? " + (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset));
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         } else if (pointType == PointType.SquarePoint)

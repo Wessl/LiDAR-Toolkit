@@ -1550,7 +1550,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 1000
-  scanType: 4
+  scanType: 0
   coneAngle: 30
   puckAngleIncrementer: 0.5
   squareScanSize: 0.202
