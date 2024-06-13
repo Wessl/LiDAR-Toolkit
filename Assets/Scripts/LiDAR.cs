@@ -39,6 +39,7 @@ public class LiDAR : MonoBehaviour
 
     [Header("Regular scan")]    
     public ScanType scanType;
+    public ColorMode colorMode;
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
@@ -78,6 +79,10 @@ public class LiDAR : MonoBehaviour
         Circle, Line, Square, Sphere, Puck
     }
 
+    public enum ColorMode
+    {
+        HeightBased, RealUVColor
+    }
    
 
     // Start is called before the first frame update
@@ -299,14 +304,15 @@ public class LiDAR : MonoBehaviour
             var hit = RaycastedResults[index];
             if (hit.collider != null)
             {
-                // If hit.collider is not null means there was a hit
                 if (drawPointsRef.overrideColor) RaycastedPointColors[index] = drawPointsRef.pointColor;
-                // do some funky temp stuff just because we can
-                var y = hit.point.y;
 
-                RaycastedPointColors[index] = TempColorScalerForLidar(y, 5);
-                //RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
-                 // fix this to do proper color management later
+                if (colorMode == ColorMode.HeightBased)
+                    RaycastedPointColors[index] = TempColorScalerForLidar(hit.point.y, 5);
+                else if (colorMode == ColorMode.RealUVColor)
+                    RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                else
+                    Debug.LogError("Invalid color mode specified!");
+                // fix this to do proper color management later
                 RaycastedNormals[index] = hit.normal;
                 RaycastedPointsHit[index++] = hit.point;
             }
