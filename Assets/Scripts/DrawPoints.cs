@@ -65,7 +65,7 @@ public class DrawPoints : MonoBehaviour
              " Example: Three buffers are used to render points, so a limit of 576MB => 192MB per buffer, and 12 bytes" +
              " is needed to store each point (4 bytes per float, 3 per Vector3) => 16MB of points ~16.8 million points rendered." +
              "Also, note that just because you have a lot more VRAM than what you allocate here, rendering speed can still get quite low if you decide to use meshes instead of circles or pixels.")]
-    public float hardVramLimitInMegabytes = 576f;
+    private float hardVramLimitInMegabytes = 768f;
     private int _ComputeBufferSize = 16777216;       // 2^24. 3*4*16777216 = 192MB
     private int _strideVec3;
     private int _strideVec4;
@@ -113,7 +113,7 @@ public class DrawPoints : MonoBehaviour
 
     private int CalculateCompBufferSize()
     {
-        int compBufCount;
+        long compBufCount;
         // We're using N buffers in total. 12 bytes per index in each buffer. 1048576 is 1 megabyte.
         double singleBufferLength = (hardVramLimitInMegabytes/(COMPUTEBUFFERCOUNT*3*4)) * MEGABYTE;
         var exponent = (Math.Log(singleBufferLength, 2));
@@ -126,7 +126,7 @@ public class DrawPoints : MonoBehaviour
             compBufCount = (int)Math.Pow(2, roundedDownExponent);     // the reason we are doing a calculation here is to "go back" to the input value of the user
             Debug.Log($"The hard limit in VRAM you chose was automatically changed to {compBufCount * 4 * 3 * COMPUTEBUFFERCOUNT / (MEGABYTE)}, this number will divide nicer into the number and size of buffers we're using.");
         }
-        return compBufCount;
+        return (int)compBufCount;
     }
 
     public void SetUpMaterials()
@@ -202,6 +202,7 @@ public class DrawPoints : MonoBehaviour
             _posBuffer.SetData(pointPositions, 0, bufferStartIndex, amount);
             if (fadePointsOverTime)
             {
+                // todo: parallelize?
                 float[] timestamps = new float[amount];
                 for (int i = 0; i < amount; i++) timestamps[i] = Time.time;
                 _timeBuffer.SetData(timestamps, 0, bufferStartIndex, amount);
@@ -289,7 +290,6 @@ public class DrawPoints : MonoBehaviour
     public void OnValidate()
     {
         // Called whenever values in the inspector are changed
-        _ComputeBufferSize = CalculateCompBufferSize();
         SetUpMaterials();
     }
 

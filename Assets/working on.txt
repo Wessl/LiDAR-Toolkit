@@ -17,11 +17,11 @@ technically we could make a draw squares very easily by just modifying the shade
 circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.
 check if we need persistent allocation for all the nativearrays.
-the "X points rendered" text is slightly wrong? it said i have 35 points rendered but I only counted 19. weird. 
 squares are seemingly broken! only render triangle! 
 maybe "fire rate" should always be how many points we create per second, right now its not
 cpu utilization across cores is not as high as I would have expected - are we really all that parallel? 
 oh yeah and idk make the lines that are drawn to the point look better. line renderer was a fun little debug thing, but we can do better? maybe? or not. idk
+should points that go off into space and never create a poiint, count as a point having been created?
 le bug: if you set Hard vram limit too high it wraps around and becomes negative. also if you just set it to higher than it is now you start breaking stuff with out of range exceptions and stuff, bad! 
 
 some kind of startup message on first play that says "hey this is how the thing works. we have 3 point types, use the correct shaders. these pipelines are supported". 
