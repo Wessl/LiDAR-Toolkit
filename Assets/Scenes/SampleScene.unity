@@ -213,11 +213,11 @@ MonoBehaviour:
     m_Bits: 1
   lidarRange: 500
   scanType: 4
+  colorMode: 0
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
   fireRate: 0
-  minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -357,7 +357,6 @@ MonoBehaviour:
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 0
-  hardVramLimitInMegabytes: 200
   debugText: {fileID: 0}
 --- !u!4 &30355595
 Transform:
@@ -613,11 +612,11 @@ MonoBehaviour:
     m_Bits: 1
   lidarRange: 500
   scanType: 1
+  colorMode: 0
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
   fireRate: 0
-  minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -757,7 +756,6 @@ MonoBehaviour:
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 0
-  hardVramLimitInMegabytes: 200
   debugText: {fileID: 0}
 --- !u!4 &699025821
 Transform:
@@ -1057,11 +1055,11 @@ MonoBehaviour:
     m_Bits: 1
   lidarRange: 500
   scanType: 3
+  colorMode: 0
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
   fireRate: 0
-  minimumAcceptableFPS: 20
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -1201,7 +1199,6 @@ MonoBehaviour:
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 1
-  hardVramLimitInMegabytes: 576
   debugText: {fileID: 0}
 --- !u!4 &765928097
 Transform:
@@ -1551,11 +1548,11 @@ MonoBehaviour:
     m_Bits: 1
   lidarRange: 1000
   scanType: 0
+  colorMode: 1
   coneAngle: 30
   puckAngleIncrementer: 0.5
   squareScanSize: 0.202
-  fireRate: 1000
-  minimumAcceptableFPS: 1
+  fireRate: 11383
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -1601,7 +1598,7 @@ MonoBehaviour:
   squareShader: {fileID: 4800000, guid: 4609caf984078443fb711622b0ec5b45, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 1
+  pointType: 3
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
   smoothEdges: 1
@@ -1613,7 +1610,6 @@ MonoBehaviour:
   fadePointsOverTime: 0
   fadeTime: 0
   useNormalsForColor: 0
-  hardVramLimitInMegabytes: 500
   debugText: {fileID: 0}
 --- !u!114 &963194233
 MonoBehaviour:

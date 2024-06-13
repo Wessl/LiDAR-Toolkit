@@ -32,18 +32,11 @@ Shader "Draw Circles Experimental"
                 float2 uv : TEXCOORD0;
                 uint instance : SV_INSTANCEID;
             };
-
-//#ifdef GL_ARB_gpu_shader_fp64
-            double Mod(double x, double y)
+            
+            half Mod(half x, half y)
             {
                 return x - y * floor(x/y);
             }
-//#else
-//            float Mod(float x, float y)
-//            {
-//                return x - y * floor(x/y);
-//            }
-//#endif
             
             shaderdata VSMain (uint id:SV_VertexID, uint instance:SV_INSTANCEID)
             {
