@@ -33,7 +33,7 @@ Shader "Draw Squares"
                 uint instance : SV_INSTANCEID;
             };
              
-            half Mod(half x, half y)
+            float Mod(half x, half y)
             {
                 return x - y * floor(x/y);
             }
@@ -57,7 +57,6 @@ Shader "Draw Squares"
                 * float4(_Scale, _Scale, 1.0, 1.0));
                 
                 vs.vertex = UnityObjectToClipPos(float4(center*2.0, 1.0)) + pos2;
-                
                 return vs;
             }
  

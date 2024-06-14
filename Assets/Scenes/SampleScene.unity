@@ -1598,7 +1598,7 @@ MonoBehaviour:
   squareShader: {fileID: 4800000, guid: 4609caf984078443fb711622b0ec5b45, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 3
+  pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
   smoothEdges: 1

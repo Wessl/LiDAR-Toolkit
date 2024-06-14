@@ -94,6 +94,7 @@ public class LiDAR : MonoBehaviour
 
     public void ScanSizeAreaUpdate(Vector2 mouseScrollDelta)
     {
+        Debug.Log("!uasdads");
         var scrollDelta = mouseScrollDelta.y;
         // Cone (for circle)
         coneAngle += scrollDelta;
@@ -176,6 +177,7 @@ public class LiDAR : MonoBehaviour
             FireRate = calculatedFireRate,
             P = p,
             Q = q,
+            ConeAngle = coneAngle,
             seed = System.DateTime.Now.Ticks,
             Output = pointsOnDisc
         };
@@ -225,11 +227,11 @@ public class LiDAR : MonoBehaviour
         drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
     }
     
-    private static Vector3 GenRandPointDisc(Vector3 p, Vector3 q, ref Unity.Mathematics.Random rng)
+    private static Vector3 GenRandPointDisc(Vector3 p, Vector3 q, float coneAngle, ref Unity.Mathematics.Random rng)
     {
         // Generate random point in the PQ plane disc
         var theta = rng.NextFloat(0, 2) * Mathf.PI;
-        var r = discRMax * Mathf.Sqrt(rng.NextFloat(0, 1));  // If you don't take the square root the points all end up in the middle. Uses about 0.25 ms/frame, probably worth it as a tradeoff. 
+        var r = (float)Math.Tan(Mathf.Deg2Rad * coneAngle) * Mathf.Sqrt(rng.NextFloat(0, 1));  // If you don't take the square root the points all end up in the middle. Uses about 0.25 ms/frame, probably worth it as a tradeoff. 
         return r * (p * Mathf.Cos(theta) + q * Mathf.Sin(theta));
     }
     
@@ -473,6 +475,7 @@ public class LiDAR : MonoBehaviour
         [ReadOnly] public int FireRate;
         [ReadOnly] public Vector3 P;
         [ReadOnly] public Vector3 Q;
+        [ReadOnly] public float ConeAngle;
 
         [WriteOnly]
         public NativeArray<Vector3> Output;
@@ -484,7 +487,7 @@ public class LiDAR : MonoBehaviour
             Unity.Mathematics.Random rng = new Unity.Mathematics.Random((uint)seed);
             for (int i = 0; i < FireRate; i++)
             {
-                Output[i] = GenRandPointDisc(P,Q, ref rng);
+                Output[i] = GenRandPointDisc(P,Q, ConeAngle, ref rng);
             }
         }
     }
