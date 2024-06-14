@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
@@ -39,10 +40,6 @@ public class DrawPoints : MonoBehaviour
     [Tooltip("Smooth out the edges of applicable points. Currently supports circle and square-type points.")]
     private bool smoothEdges;
     
-    
-    // Color overrides
-    public bool overrideColor;
-    public Color pointColor;
     public bool useColorGradient;
     public Color farPointColor;
     public float farPointDistance;
@@ -65,7 +62,7 @@ public class DrawPoints : MonoBehaviour
              " Example: Three buffers are used to render points, so a limit of 576MB => 192MB per buffer, and 12 bytes" +
              " is needed to store each point (4 bytes per float, 3 per Vector3) => 16MB of points ~16.8 million points rendered." +
              "Also, note that just because you have a lot more VRAM than what you allocate here, rendering speed can still get quite low if you decide to use meshes instead of circles or pixels.")]
-    private float hardVramLimitInMegabytes = 76f;
+    private float hardVramLimitInMegabytes = 768f;
     private int _ComputeBufferSize = 16777216;       // 2^24. 3*4*16777216 = 192MB
     private int _strideVec3;
     private int _strideVec4;
@@ -169,6 +166,7 @@ public class DrawPoints : MonoBehaviour
 
     public void UploadPointData(Vector3[] pointPositions, Vector4[] colors, Vector3[] normals)
     {
+        Profiler.BeginSample("UploadPointData()");
         int amount = pointPositions.Length;
         int bufferStartIndex = _bufIndex % (_ComputeBufferSize);
         
@@ -216,6 +214,7 @@ public class DrawPoints : MonoBehaviour
         
         _bufIndex += amount;
         _canStartRendering = true;
+        Profiler.EndSample();
     }
     
     

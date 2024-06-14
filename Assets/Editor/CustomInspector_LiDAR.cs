@@ -13,8 +13,7 @@ namespace Editor
             LiDAR myTarget = (LiDAR)target;
             
             // Default stuff, except line renderer
-            DrawPropertiesExcluding(serializedObject, new string[]{ "lineRenderer", "useLineRenderer", "lineSpawnSource", "maxLinesPerFrame" });
-
+            DrawPropertiesExcluding(serializedObject, new string[]{ "lineRenderer", "useLineRenderer", "lineSpawnSource", "maxLinesPerFrame", });
 
             EditorGUILayout.Separator();
             myTarget.useLineRenderer = EditorGUILayout.BeginToggleGroup("Draw Lines", myTarget.useLineRenderer);

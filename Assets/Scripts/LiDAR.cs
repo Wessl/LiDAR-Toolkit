@@ -5,6 +5,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -40,6 +42,7 @@ public class LiDAR : MonoBehaviour
     [Header("Regular scan")]    
     public ScanType scanType;
     public ColorMode colorMode;
+    public Color overrideColor;
     [Tooltip("The angle of the cone for the default scan")]
     [Range(0,60)]
     public float coneAngle;
@@ -79,7 +82,7 @@ public class LiDAR : MonoBehaviour
 
     public enum ColorMode
     {
-        HeightBased, RealUVColor
+        HeightBased, RealUVColor, OverrideColor
     }
    
 
@@ -108,6 +111,7 @@ public class LiDAR : MonoBehaviour
 
     public void DefaultScan(Vector3? facingDirOverride, Transform? sourceTransformOverride)
     {
+        Profiler.BeginSample("DefaultScan");
         var facingDir = facingDirOverride ?? mainCam.gameObject.transform.forward;
         var cameraPos = sourceTransformOverride ?? mainCam.transform;
         if (scanType == ScanType.Circle)
@@ -126,6 +130,7 @@ public class LiDAR : MonoBehaviour
         {
             VelodynePuckScan(cameraPos, 100, ref puckAngleCurrPlayerControl);
         }
+        Profiler.EndSample();
     }
     
     private void SquareScan(Transform cameraTransform, Vector3 facingDir)
@@ -167,6 +172,7 @@ public class LiDAR : MonoBehaviour
 
     private void CircleScan(Transform cameraTransform, Vector3 facingDir)
     {
+        Profiler.BeginSample("CircleScan");
         // Calculate perpendicular angles to view direction to generate circle on which points can be created
         var p = GetPerpendicular(facingDir);
         var q = Vector3.Cross(facingDir.normalized, p);
@@ -185,6 +191,7 @@ public class LiDAR : MonoBehaviour
 
         CheckRayIntersections(cameraTransform.position, facingDir, pointsOnDisc.ToArray());
             drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);     // It makes more sense to split these into two
+        Profiler.EndSample();
     }
 
     public void SphereScan(Transform sourceTransform, float len)
@@ -279,47 +286,59 @@ public class LiDAR : MonoBehaviour
 
     private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
+        Profiler.BeginSample("CheckRayIntersections()");
+        Profiler.BeginSample("SetupArrays");
         RaycastedNormals = new Vector3[points.Length];
         RaycastedPointColors = new Vector4[points.Length];
         RaycastedPointsHit = new Vector3[points.Length];
         RaycastedResults = new NativeArray<RaycastHit>(points.Length, Allocator.Persistent);
         RaycastedCommands = new NativeArray<RaycastCommand>(points.Length, Allocator.Persistent);
+        Profiler.EndSample();
+        Profiler.BeginSample("SetupRaycastCommands");
         // Perform raycasts using RaycastCommand and wait for it to complete
         for (int i = 0; i < points.Length; i++)
         {
             RaycastedCommands[i] = new RaycastCommand(cameraPos, cameraRay + points[i], lidarRange, layersToHit);
         }
+        Profiler.EndSample();
         
         // Schedule the batch of raycasts.
         // Somehow clear out the parts of the commands that I don't use... maybe tricky? hm. 
+        Profiler.BeginSample("ScheduleAndComplete");
         JobHandle handle = RaycastCommand.ScheduleBatch(RaycastedCommands, RaycastedResults, 1, default(JobHandle));
 
         // Wait for the batch processing job to complete
         handle.Complete();
+        Profiler.EndSample();
         // Create the out arrays????
-
-        // Copy the result. If batchedHit.collider is null there was no hit
+        Profiler.BeginSample("GoThroughResults");
+        // Copy the result. If batchedHit.collider is null there was no hit (by the way this is the slowest part of the whole thing)
         for (var index = 0; index < RaycastedResults.Length; index++)
         {
             var hit = RaycastedResults[index];
             if (hit.collider != null)
             {
-                if (drawPointsRef.overrideColor) RaycastedPointColors[index] = drawPointsRef.pointColor;
-
-                if (colorMode == ColorMode.HeightBased)
+                if (colorMode == ColorMode.OverrideColor) 
+                    RaycastedPointColors[index] = overrideColor;
+                else if (colorMode == ColorMode.HeightBased)
                     RaycastedPointColors[index] = TempColorScalerForLidar(hit.point.y, 5);
                 else if (colorMode == ColorMode.RealUVColor)
                     RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
                 else
+                {
                     Debug.LogError("Invalid color mode specified!");
+                    break;
+                }
                 // fix this to do proper color management later
                 RaycastedNormals[index] = hit.normal;
                 RaycastedPointsHit[index++] = hit.point;
             }
         }
+        Profiler.EndSample();
 
         RaycastedResults.Dispose();
         RaycastedCommands.Dispose();
+        Profiler.EndSample();
     }
 
     float scaleFloat(float inp, float max)
