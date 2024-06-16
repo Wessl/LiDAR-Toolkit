@@ -214,6 +214,7 @@ MonoBehaviour:
   lidarRange: 500
   scanType: 4
   colorMode: 0
+  overrideColor: {r: 0, g: 0, b: 0, a: 0}
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
@@ -349,8 +350,6 @@ MonoBehaviour:
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.2
   smoothEdges: 0
-  overrideColor: 1
-  pointColor: {r: 1, g: 0.34198838, b: 0, a: 0}
   useColorGradient: 1
   farPointColor: {r: 0, g: 1, b: 0.3359518, a: 0}
   farPointDistance: 20
@@ -613,6 +612,7 @@ MonoBehaviour:
   lidarRange: 500
   scanType: 1
   colorMode: 0
+  overrideColor: {r: 0, g: 0, b: 0, a: 0}
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
@@ -748,8 +748,6 @@ MonoBehaviour:
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.1
   smoothEdges: 0
-  overrideColor: 0
-  pointColor: {r: 1, g: 0.98048776, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0, g: 0, b: 0, a: 0}
   farPointDistance: -1
@@ -1056,6 +1054,7 @@ MonoBehaviour:
   lidarRange: 500
   scanType: 3
   colorMode: 0
+  overrideColor: {r: 0, g: 0, b: 0, a: 0}
   coneAngle: 0
   puckAngleIncrementer: 1
   squareScanSize: 0
@@ -1191,8 +1190,6 @@ MonoBehaviour:
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.1
   smoothEdges: 0
-  overrideColor: 1
-  pointColor: {r: 1, g: 0.98048776, b: 0, a: 0}
   useColorGradient: 0
   farPointColor: {r: 0, g: 0, b: 0, a: 0}
   farPointDistance: -1
@@ -1549,6 +1546,7 @@ MonoBehaviour:
   lidarRange: 1000
   scanType: 0
   colorMode: 1
+  overrideColor: {r: 0, g: 0, b: 0, a: 0}
   coneAngle: 30
   puckAngleIncrementer: 0.5
   squareScanSize: 0.202
@@ -1598,12 +1596,10 @@ MonoBehaviour:
   squareShader: {fileID: 4800000, guid: 4609caf984078443fb711622b0ec5b45, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 1
+  pointType: 2
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
   smoothEdges: 1
-  overrideColor: 0
-  pointColor: {r: 0.33713734, g: 1, b: 0, a: 0}
   useColorGradient: 1
   farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
   farPointDistance: -1

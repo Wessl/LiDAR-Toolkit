@@ -148,7 +148,6 @@ public class DrawPoints : MonoBehaviour
         else if (pointType == PointType.MeshPoint)
         {
             _material = GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset ? new Material(meshShaderURP) : new Material(meshShaderBRP);
-            Debug.Log("what is the renderpipeline? " + (GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset));
             _material.enableInstancing = true;
             _material.SetFloat("_Scale", pointScale);
         } else if (pointType == PointType.SquarePoint)
@@ -216,8 +215,7 @@ public class DrawPoints : MonoBehaviour
         _canStartRendering = true;
         Profiler.EndSample();
     }
-    
-    
+
     void Update()
     {
         // DrawMeshInstancedProcedural needs to use Update() 
@@ -257,17 +255,25 @@ public class DrawPoints : MonoBehaviour
             }
         }
     }
+
+    private int prevRenderIndex = 0;
     
     public void RenderPointsNow()
     {
-        bounds = new Bounds(Camera.main.transform.position, Vector3.one * 2f);
+        if (prevRenderIndex != _bufIndex)
+        {
+            bounds = new Bounds(Camera.main.transform.position, Vector3.one * 200f);
+            _material.SetVector(Camerapos, mainCam.transform.position);
+            _material.SetFloat(FadeTime, fadeTime);
+            _material.SetBuffer(Posbuffer, _posBuffer);
+            _material.SetBuffer(Colorbuffer, _colorBuffer);
+            _material.SetBuffer(Timebuffer, _timeBuffer);
+            _material.SetBuffer(Normalbuffer, _normalBuffer);
+        }
         _material.SetPass(0);
-        _material.SetVector(Camerapos, mainCam.transform.position);
-        _material.SetFloat(FadeTime, fadeTime);
-        _material.SetBuffer(Posbuffer, _posBuffer);
-        _material.SetBuffer(Colorbuffer, _colorBuffer);
-        _material.SetBuffer(Timebuffer, _timeBuffer);
-        _material.SetBuffer(Normalbuffer, _normalBuffer);
+        prevRenderIndex = _bufIndex;
+        
+        
         var count = Mathf.Min(_bufIndex, _ComputeBufferSize);
         if (pointType == PointType.PixelPoint)
         {

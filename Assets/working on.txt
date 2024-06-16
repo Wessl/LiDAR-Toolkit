@@ -16,7 +16,6 @@ the puck scanner is a little buggy? not sure what to do with it.
 spread out the super scan lines line renderer thing
 circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.
-check if we need persistent allocation for all the nativearrays.
 cpu utilization across cores is not as high as I would have expected - are we really all that parallel? 
 oh yeah and idk make the lines that are drawn to the point look better. line renderer was a fun little debug thing, but we can do better? maybe? or not. idk
 should points that go off into space and never create a poiint, count as a point having been created?

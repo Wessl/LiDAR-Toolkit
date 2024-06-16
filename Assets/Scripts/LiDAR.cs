@@ -291,8 +291,8 @@ public class LiDAR : MonoBehaviour
         RaycastedNormals = new Vector3[points.Length];
         RaycastedPointColors = new Vector4[points.Length];
         RaycastedPointsHit = new Vector3[points.Length];
-        RaycastedResults = new NativeArray<RaycastHit>(points.Length, Allocator.Persistent);
-        RaycastedCommands = new NativeArray<RaycastCommand>(points.Length, Allocator.Persistent);
+        RaycastedResults = new NativeArray<RaycastHit>(points.Length, Allocator.TempJob);
+        RaycastedCommands = new NativeArray<RaycastCommand>(points.Length, Allocator.TempJob);
         Profiler.EndSample();
         Profiler.BeginSample("SetupRaycastCommands");
         // Perform raycasts using RaycastCommand and wait for it to complete
