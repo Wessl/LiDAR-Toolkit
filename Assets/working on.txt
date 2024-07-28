@@ -19,7 +19,7 @@ pixels, but BIG. basically you could just do circle but square and then make siz
 cpu utilization across cores is not as high as I would have expected - are we really all that parallel? 
 oh yeah and idk make the lines that are drawn to the point look better. line renderer was a fun little debug thing, but we can do better? maybe? or not. idk
 should points that go off into space and never create a poiint, count as a point having been created?
-le bug: if you set Hard vram limit too high it wraps around and becomes negative. also if you just set it to higher than it is now you start breaking stuff with out of range exceptions and stuff, bad! 
+hm. there is some cursed, circular object that is super expensive to look at, what could that be? it exists for every shader, too... 
 
 some kind of startup message on first play that says "hey this is how the thing works. we have 3 point types, use the correct shaders. these pipelines are supported". 
 

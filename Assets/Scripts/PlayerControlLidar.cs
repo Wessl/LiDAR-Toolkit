@@ -44,6 +44,7 @@ public class PlayerControlLidar : MonoBehaviour
 
     private void FixedUpdate()
     {
+        return;
         if (scanType == LiDAR.ScanType.Puck)
         {
             float timeThisFrameMs = 0;

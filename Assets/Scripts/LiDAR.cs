@@ -190,7 +190,7 @@ public class LiDAR : MonoBehaviour
         job.Schedule().Complete();
 
         CheckRayIntersections(cameraTransform.position, facingDir, pointsOnDisc.ToArray());
-            drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);     // It makes more sense to split these into two
+        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);     // It makes more sense to split these into two
         Profiler.EndSample();
     }
 
@@ -287,31 +287,24 @@ public class LiDAR : MonoBehaviour
     private void CheckRayIntersections(Vector3 cameraPos, Vector3 cameraRay, Vector3[] points)
     {
         Profiler.BeginSample("CheckRayIntersections()");
-        Profiler.BeginSample("SetupArrays");
-        RaycastedNormals = new Vector3[points.Length];
-        RaycastedPointColors = new Vector4[points.Length];
-        RaycastedPointsHit = new Vector3[points.Length];
+        // You probably don't need to remake these every frame. just create them with max possible point size, and put the changes into them, and then do not upload the things that do not get hit??? its easy. 
+        Vector3[] tempRaycastedNormals = new Vector3[points.Length];
+        Vector4[] tempRaycastedPointColors = new Vector4[points.Length];
+        Vector3[] tempRaycastedPointsHit = new Vector3[points.Length];
         RaycastedResults = new NativeArray<RaycastHit>(points.Length, Allocator.TempJob);
         RaycastedCommands = new NativeArray<RaycastCommand>(points.Length, Allocator.TempJob);
-        Profiler.EndSample();
-        Profiler.BeginSample("SetupRaycastCommands");
         // Perform raycasts using RaycastCommand and wait for it to complete
         for (int i = 0; i < points.Length; i++)
         {
             RaycastedCommands[i] = new RaycastCommand(cameraPos, cameraRay + points[i], lidarRange, layersToHit);
         }
-        Profiler.EndSample();
         
         // Schedule the batch of raycasts.
-        // Somehow clear out the parts of the commands that I don't use... maybe tricky? hm. 
-        Profiler.BeginSample("ScheduleAndComplete");
         JobHandle handle = RaycastCommand.ScheduleBatch(RaycastedCommands, RaycastedResults, 1, default(JobHandle));
 
         // Wait for the batch processing job to complete
         handle.Complete();
-        Profiler.EndSample();
-        // Create the out arrays????
-        Profiler.BeginSample("GoThroughResults");
+        int actualPointsHit = 0;
         // Copy the result. If batchedHit.collider is null there was no hit (by the way this is the slowest part of the whole thing)
         for (var index = 0; index < RaycastedResults.Length; index++)
         {
@@ -319,26 +312,35 @@ public class LiDAR : MonoBehaviour
             if (hit.collider != null)
             {
                 if (colorMode == ColorMode.OverrideColor) 
-                    RaycastedPointColors[index] = overrideColor;
+                    tempRaycastedPointColors[index] = overrideColor;
                 else if (colorMode == ColorMode.HeightBased)
-                    RaycastedPointColors[index] = TempColorScalerForLidar(hit.point.y, 5);
+                    tempRaycastedPointColors[index] = TempColorScalerForLidar(hit.point.y, 5);
                 else if (colorMode == ColorMode.RealUVColor)
-                    RaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                    tempRaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
                 else
                 {
                     Debug.LogError("Invalid color mode specified!");
                     break;
                 }
                 // fix this to do proper color management later
-                RaycastedNormals[index] = hit.normal;
-                RaycastedPointsHit[index++] = hit.point;
+                tempRaycastedNormals[index] = hit.normal;
+                tempRaycastedPointsHit[index] = hit.point; // there used to be a index++ here but I removed it I hope it wasn't necessary? lol. not sure. 
+                actualPointsHit++;
             }
         }
-        Profiler.EndSample();
-
+        
+        // Testing to see if I can get rid of the Unholy Black Circle of Transparent Doom (The Eater of Drawcalls [and my sanity])
+        RaycastedNormals = new Vector3[actualPointsHit];
+        RaycastedPointsHit = new Vector3[actualPointsHit];
+        RaycastedPointColors = new Vector4[actualPointsHit];
+        Debug.Log($"here, let's find out just how many points are living in the array before: {tempRaycastedPointsHit.Length}");
+        Array.Copy(tempRaycastedNormals, RaycastedNormals, actualPointsHit);
+        Array.Copy(tempRaycastedPointsHit, RaycastedPointsHit, actualPointsHit);
+        Array.Copy(tempRaycastedPointColors, RaycastedPointColors, actualPointsHit);
+        Debug.Log($"now, what about after? {RaycastedPointsHit.Length}");
+        
         RaycastedResults.Dispose();
         RaycastedCommands.Dispose();
-        Profiler.EndSample();
     }
 
     float scaleFloat(float inp, float max)

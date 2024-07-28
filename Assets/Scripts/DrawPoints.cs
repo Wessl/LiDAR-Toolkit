@@ -267,8 +267,8 @@ public class DrawPoints : MonoBehaviour
             _material.SetFloat(FadeTime, fadeTime);
             _material.SetBuffer(Posbuffer, _posBuffer);
             _material.SetBuffer(Colorbuffer, _colorBuffer);
-            _material.SetBuffer(Timebuffer, _timeBuffer);
-            _material.SetBuffer(Normalbuffer, _normalBuffer);
+            //_material.SetBuffer(Timebuffer, _timeBuffer);
+            //_material.SetBuffer(Normalbuffer, _normalBuffer);
         }
         _material.SetPass(0);
         prevRenderIndex = _bufIndex;
