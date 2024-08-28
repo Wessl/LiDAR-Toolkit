@@ -882,7 +882,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &736596347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1544,13 +1544,13 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 1000
-  scanType: 0
+  scanType: 3
   colorMode: 1
   overrideColor: {r: 0, g: 0, b: 0, a: 0}
   coneAngle: 30
   puckAngleIncrementer: 0.5
   squareScanSize: 0.202
-  fireRate: 11383
+  fireRate: 11300
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
@@ -1596,7 +1596,7 @@ MonoBehaviour:
   squareShader: {fileID: 4800000, guid: 4609caf984078443fb711622b0ec5b45, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
-  pointType: 2
+  pointType: 1
   pointMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   pointScale: 0.05
   smoothEdges: 1

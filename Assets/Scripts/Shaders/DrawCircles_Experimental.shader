@@ -48,7 +48,8 @@ Shader "Draw Circles Experimental"
                 vs.uv = float2(u,v);
                 dist = distance(camerapos, center);
                 // This assumes we are only setting either the normal buffer or the color buffer 
-                vs.color = float4(normalbuffer[instance],1) + colorbuffer[instance];
+                //vs.color = float4(normalbuffer[instance],1) + colorbuffer[instance];
+                vs.color = colorbuffer[instance];
                 vs.color = lerp(vs.color, farcolor, clamp(dist/fardist,0,1));
                 // billboard.
                 float4 pos2 = mul(UNITY_MATRIX_P, 

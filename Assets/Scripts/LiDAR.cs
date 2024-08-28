@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -312,32 +313,29 @@ public class LiDAR : MonoBehaviour
             if (hit.collider != null)
             {
                 if (colorMode == ColorMode.OverrideColor) 
-                    tempRaycastedPointColors[index] = overrideColor;
+                    tempRaycastedPointColors[actualPointsHit] = overrideColor;
                 else if (colorMode == ColorMode.HeightBased)
-                    tempRaycastedPointColors[index] = TempColorScalerForLidar(hit.point.y, 5);
+                    tempRaycastedPointColors[actualPointsHit] = TempColorScalerForLidar(hit.point.y, 5);
                 else if (colorMode == ColorMode.RealUVColor)
-                    tempRaycastedPointColors[index] = GetColliderRelatedUVPointColor(hit);
+                    tempRaycastedPointColors[actualPointsHit] = GetColliderRelatedUVPointColor(hit);
                 else
                 {
                     Debug.LogError("Invalid color mode specified!");
                     break;
                 }
+
                 // fix this to do proper color management later
-                tempRaycastedNormals[index] = hit.normal;
-                tempRaycastedPointsHit[index] = hit.point; // there used to be a index++ here but I removed it I hope it wasn't necessary? lol. not sure. 
+                tempRaycastedNormals[actualPointsHit] = hit.normal;
+                tempRaycastedPointsHit[actualPointsHit] = hit.point;
                 actualPointsHit++;
             }
         }
-        
-        // Testing to see if I can get rid of the Unholy Black Circle of Transparent Doom (The Eater of Drawcalls [and my sanity])
         RaycastedNormals = new Vector3[actualPointsHit];
         RaycastedPointsHit = new Vector3[actualPointsHit];
         RaycastedPointColors = new Vector4[actualPointsHit];
-        Debug.Log($"here, let's find out just how many points are living in the array before: {tempRaycastedPointsHit.Length}");
         Array.Copy(tempRaycastedNormals, RaycastedNormals, actualPointsHit);
         Array.Copy(tempRaycastedPointsHit, RaycastedPointsHit, actualPointsHit);
         Array.Copy(tempRaycastedPointColors, RaycastedPointColors, actualPointsHit);
-        Debug.Log($"now, what about after? {RaycastedPointsHit.Length}");
         
         RaycastedResults.Dispose();
         RaycastedCommands.Dispose();

@@ -16,12 +16,5 @@ the puck scanner is a little buggy? not sure what to do with it.
 spread out the super scan lines line renderer thing
 circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.
-cpu utilization across cores is not as high as I would have expected - are we really all that parallel? 
+cpu utilization across cores is not as high as I would have expected - are we really all that parallel? maybe not! 
 oh yeah and idk make the lines that are drawn to the point look better. line renderer was a fun little debug thing, but we can do better? maybe? or not. idk
-should points that go off into space and never create a poiint, count as a point having been created?
-hm. there is some cursed, circular object that is super expensive to look at, what could that be? it exists for every shader, too... 
-
-some kind of startup message on first play that says "hey this is how the thing works. we have 3 point types, use the correct shaders. these pipelines are supported". 
-
-HDRP    - Will probably not do since we need to rewrite some shader stuff, sounds like a pain. also why do you need hdrp in a point cloud game xd
-
