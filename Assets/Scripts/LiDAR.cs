@@ -307,6 +307,7 @@ public class LiDAR : MonoBehaviour
         handle.Complete();
         int actualPointsHit = 0;
         // Copy the result. If batchedHit.collider is null there was no hit (by the way this is the slowest part of the whole thing)
+        Profiler.BeginSample("For loop");
         for (var index = 0; index < RaycastedResults.Length; index++)
         {
             var hit = RaycastedResults[index];
@@ -330,6 +331,7 @@ public class LiDAR : MonoBehaviour
                 actualPointsHit++;
             }
         }
+        Profiler.EndSample();
         RaycastedNormals = new Vector3[actualPointsHit];
         RaycastedPointsHit = new Vector3[actualPointsHit];
         RaycastedPointColors = new Vector4[actualPointsHit];

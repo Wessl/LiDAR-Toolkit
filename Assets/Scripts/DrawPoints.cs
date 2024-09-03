@@ -290,6 +290,21 @@ public class DrawPoints : MonoBehaviour
         {
             Graphics.DrawMeshInstancedProcedural(pointMesh, 0, _material, bounds, count,  null, ShadowCastingMode.Off, false);
         }
+        
+        // 2nd pass for transparent rendering
+        _material.SetPass(1);
+        if (pointType == PointType.PixelPoint)
+        {
+            Graphics.DrawProceduralNow(MeshTopology.Points, count, 1);
+        }
+        else if (pointType == PointType.CirclePoint || pointType == PointType.SquarePoint)
+        {
+            Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, count);
+        }
+        else if (pointType == PointType.MeshPoint)
+        {
+            Graphics.DrawMeshInstancedProcedural(pointMesh, 0, _material, bounds, count, null, ShadowCastingMode.Off, false);
+        }
     }
 
     public void OnValidate()

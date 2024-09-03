@@ -400,7 +400,7 @@ GameObject:
   - component: {fileID: 352087950}
   - component: {fileID: 352087949}
   m_Layer: 7
-  m_Name: Cube (1)
+  m_Name: CURSED
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1544,13 +1544,13 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   lidarRange: 1000
-  scanType: 3
-  colorMode: 1
-  overrideColor: {r: 0, g: 0, b: 0, a: 0}
+  scanType: 0
+  colorMode: 0
+  overrideColor: {r: 1, g: 1, b: 1, a: 0}
   coneAngle: 30
   puckAngleIncrementer: 0.5
   squareScanSize: 0.202
-  fireRate: 11300
+  fireRate: 1000000
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
