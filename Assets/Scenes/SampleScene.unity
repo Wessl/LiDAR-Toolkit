@@ -1545,7 +1545,7 @@ MonoBehaviour:
     m_Bits: 1
   lidarRange: 1000
   scanType: 0
-  colorMode: 0
+  colorMode: 1
   overrideColor: {r: 1, g: 1, b: 1, a: 0}
   coneAngle: 30
   puckAngleIncrementer: 0.5
@@ -1601,10 +1601,10 @@ MonoBehaviour:
   pointScale: 0.05
   smoothEdges: 1
   useColorGradient: 1
-  farPointColor: {r: 0.6226415, g: 0, b: 0.253389, a: 0}
-  farPointDistance: -1
-  fadePointsOverTime: 0
-  fadeTime: 0
+  farPointColor: {r: 0, g: 0, b: 0, a: 0}
+  farPointDistance: 20
+  fadePointsOverTime: 1
+  fadeTime: 6
   useNormalsForColor: 0
   debugText: {fileID: 0}
 --- !u!114 &963194233

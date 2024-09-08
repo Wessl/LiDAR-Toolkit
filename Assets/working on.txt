@@ -24,4 +24,4 @@ speeding up the for loop in the collision checking logic would be cool but kinda
 
 for the 2 pass shader for drawing transparent: 
 1. i kinda hate having to duplicate code like that, but there is probably some good solution out there that I just do not know about yet
-2. i am probably going to have to figure out a new way to do time based fade-outs since that is depending on alpha 
+2. and i will need to modify the main c# code to accomodate the fact that not all shaders will need or will have 2 passes not sure how to do that yet

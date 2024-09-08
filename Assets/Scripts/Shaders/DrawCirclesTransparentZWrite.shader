@@ -68,8 +68,13 @@ Shader "Draw Circles Transparent ZWrite"
             {
                 float2 S = ps.uv * 2.0 - 1.0;
                 float distanceFromCenter = dot(S.xy, S.xy);
+                int clipValue = 1.0;
+                
+                float value = max((timebuffer[ps.instance]+fadeTime-_Time.y) / (fadeTime),0);
+                
+                if (fadeTime != 0) clipValue = value;
 
-                clip(1.0 - distanceFromCenter);
+                clip(clipValue - distanceFromCenter);
 
                 float alpha = _SmoothEdges ? saturate(1.0 / (distanceFromCenter * 10.0) - 0.1f) : 1.0;
 
