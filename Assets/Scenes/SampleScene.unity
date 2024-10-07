@@ -1592,7 +1592,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   printInfoToGUI: 1
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
-  circleShader: {fileID: 4800000, guid: 67cf53e5fa69a1541a332fbd8c139587, type: 3}
+  circleShader: {fileID: 4800000, guid: 863c2172d06b4224c844d0a0ef382942, type: 3}
   squareShader: {fileID: 4800000, guid: 4609caf984078443fb711622b0ec5b45, type: 3}
   meshShaderURP: {fileID: 4800000, guid: 089d85343a0eea346a479d8a1a3abf80, type: 3}
   meshShaderBRP: {fileID: 4800000, guid: 5a41fa4e3fb7b2e4b823e773526f31f1, type: 3}
@@ -1604,7 +1604,7 @@ MonoBehaviour:
   farPointColor: {r: 0, g: 0, b: 0, a: 0}
   farPointDistance: 20
   fadePointsOverTime: 1
-  fadeTime: 6
+  fadeTime: 1
   useNormalsForColor: 0
   debugText: {fileID: 0}
 --- !u!114 &963194233
