@@ -85,8 +85,7 @@ Shader "Draw Circles Transparent ZWrite"
                 clip(clipValue - distanceFromCenter);
 
                 float alpha = _SmoothEdges ? saturate(1.0 / (distanceFromCenter * 10.0) - 0.1f) : 1.0;
-
-                // Only write fully opaque fragments (how does this work?)
+                
                 if (alpha < 0.99) clip(-1);
 
                 return ps.color;
@@ -111,7 +110,6 @@ Shader "Draw Circles Transparent ZWrite"
                 return CommonVSMain(id, instance);
             }
 
-            // Fragment shader for the transparent pass
             float4 PSMainTransparent(shaderdata ps) : SV_Target
             {
                 float2 S = ps.uv * 2.0 - 1.0;
@@ -120,18 +118,12 @@ Shader "Draw Circles Transparent ZWrite"
                 clip(1.0 - distanceFromCenter);
 
                 if (_SmoothEdges)
-                {
                     ps.color.a = saturate(1.0 / (distanceFromCenter * 10.0) - 0.1f);
-                }
                 else
-                {
                     ps.color.a = distanceFromCenter > 1.0 ? 0.0 : 1.0;
-                }
                 
                 if (fadeTime != 0)
-                {
                     ps.color.a *= max((timebuffer[ps.instance] + fadeTime - _Time.y) / fadeTime, 0);
-                }
 
                 return ps.color;
             }
