@@ -260,10 +260,12 @@ public class DrawPoints : MonoBehaviour
     
     public void RenderPointsNow()
     {
+        // always set camera position even if we don't have new points.
+        bounds = new Bounds(Camera.main.transform.position, Vector3.one * 200f);
+        _material.SetVector(Camerapos, mainCam.transform.position);
+        
         if (prevRenderIndex != _bufIndex)
         {
-            bounds = new Bounds(Camera.main.transform.position, Vector3.one * 200f);
-            _material.SetVector(Camerapos, mainCam.transform.position);
             _material.SetFloat(FadeTime, fadeTime);
             _material.SetBuffer(Posbuffer, _posBuffer);
             _material.SetBuffer(Colorbuffer, _colorBuffer);

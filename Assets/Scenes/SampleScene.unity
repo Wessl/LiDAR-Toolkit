@@ -1626,7 +1626,7 @@ MonoBehaviour:
   coneAngle: 30
   puckAngleIncrementer: 0.5
   squareScanSize: 0.202
-  fireRate: 3000000
+  fireRate: 1000000
   superScanKey: 121
   superScanSqrtNum: 200
   superScanMinTime: 1
