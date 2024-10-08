@@ -311,14 +311,18 @@ public class LiDAR : MonoBehaviour
         for (var index = 0; index < RaycastedResults.Length; index++)
         {
             var hit = RaycastedResults[index];
-            if (hit.collider != null)
+            if (hit.distance > 0)
             {
                 if (colorMode == ColorMode.OverrideColor) 
                     tempRaycastedPointColors[actualPointsHit] = overrideColor;
                 else if (colorMode == ColorMode.HeightBased)
                     tempRaycastedPointColors[actualPointsHit] = TempColorScalerForLidar(hit.point.y, 5);
                 else if (colorMode == ColorMode.RealUVColor)
+                {
+                    Profiler.BeginSample("GetColliderRelatedUVPointColor");
                     tempRaycastedPointColors[actualPointsHit] = GetColliderRelatedUVPointColor(hit);
+                    Profiler.EndSample();
+                }
                 else
                 {
                     Debug.LogError("Invalid color mode specified!");

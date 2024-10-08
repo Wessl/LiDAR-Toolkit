@@ -14,14 +14,9 @@ more advanced range-based with like a variety of colors not just lerping between
 dude what if we did one that could BOUNCE! we could do a ray-tracing lite??? that would be fucking INSANE? 
 the puck scanner is a little buggy? not sure what to do with it. 
 spread out the super scan lines line renderer thing
-circles zwrite: if on, and also using fade out: "invisible" points cover up visible points due to them still writing to zbuffer even though they are alpha = 0. 
 pixels, but BIG. basically you could just do circle but square and then make size independent of distance to camera. its possible. its just math. do it.
 cpu utilization across cores is not as high as I would have expected - are we really all that parallel? maybe not! 
 oh yeah and idk make the lines that are drawn to the point look better. line renderer was a fun little debug thing, but we can do better? maybe? or not. idk
 
 as for optimization now: 
 speeding up the for loop in the collision checking logic would be cool but kinda hard!!
-
-for the 2 pass shader for drawing transparent: 
-1. i kinda hate having to duplicate code like that, but there is probably some good solution out there that I just do not know about yet
-2. and i will need to modify the main c# code to accomodate the fact that not all shaders will need or will have 2 passes not sure how to do that yet
