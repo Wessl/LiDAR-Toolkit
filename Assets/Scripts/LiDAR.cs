@@ -151,9 +151,7 @@ public class LiDAR : MonoBehaviour
             Output = pointsInSquare
         };
         job.Schedule().Complete();
-
-        CheckRayIntersections(cameraTransform.position, facingDir, pointsInSquare.ToArray());
-        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
+        DrawPoints(cameraTransform, facingDir, pointsInSquare.ToArray());
     }
 
     public void LineScan(Transform cameraTransform, Vector3 facingDir)
@@ -166,10 +164,22 @@ public class LiDAR : MonoBehaviour
         {
             pointsOnLine[i] = right * Random.Range(-1f, 1f);
         }
-        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnLine);
-        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
+        DrawPoints(cameraTransform, facingDir, pointsOnLine);
     }
-    
+
+    private void DrawPoints(Transform cameraTransform, Vector3 facingDir, Vector3[] pointsOn2dPlane)
+    {
+        CheckRayIntersections(cameraTransform.position, facingDir, pointsOn2dPlane);
+        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
+        if (useLineRenderer)
+        {
+            foreach (var hitPos in RaycastedPointsHit)
+            {
+                DrawRayBetweenPoints(facingDir, hitPos);
+            }
+        }
+    }
+
 
     private void CircleScan(Transform cameraTransform, Vector3 facingDir)
     {
@@ -189,9 +199,7 @@ public class LiDAR : MonoBehaviour
             Output = pointsOnDisc
         };
         job.Schedule().Complete();
-
-        CheckRayIntersections(cameraTransform.position, facingDir, pointsOnDisc.ToArray());
-        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);     // It makes more sense to split these into two
+        DrawPoints(cameraTransform, facingDir, pointsOnDisc.ToArray());
         Profiler.EndSample();
     }
 
@@ -209,8 +217,7 @@ public class LiDAR : MonoBehaviour
             Output = pointsInSphere
         };
         job.Schedule().Complete();
-        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray());
-        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);   
+        DrawPoints(sourceTransform, Vector3.zero, pointsInSphere.ToArray());
     }
     
     // It's kind of like the sphere scan, except it creates continues lines around Y axis with some rotation increments.
@@ -231,8 +238,7 @@ public class LiDAR : MonoBehaviour
             Output = pointsInSphere
         };
         job.Schedule().Complete();
-        CheckRayIntersections(sourceTransform.position, Vector3.zero, pointsInSphere.ToArray());
-        drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
+        DrawPoints(sourceTransform, Vector3.zero, pointsInSphere.ToArray());
     }
     
     private static Vector3 GenRandPointDisc(Vector3 p, Vector3 q, float coneAngle, ref Unity.Mathematics.Random rng)
