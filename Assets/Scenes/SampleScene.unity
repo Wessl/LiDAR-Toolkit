@@ -348,6 +348,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   printInfoToGUI: 0
+  yDebugTextOffset: 0
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: 67cf53e5fa69a1541a332fbd8c139587, type: 3}
   squareShader: {fileID: 0}
@@ -777,6 +778,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   printInfoToGUI: 0
+  yDebugTextOffset: 0
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   squareShader: {fileID: 0}
@@ -1080,7 +1082,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b8e55c59e3f0c14ba0447f860534c03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  printInfoToGUI: 0
+  printInfoToGUI: 1
+  yDebugTextOffset: 15
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: 863c2172d06b4224c844d0a0ef382942, type: 3}
   squareShader: {fileID: 4800000, guid: bd5ba14a9c25b7847b58ed763d68b9fb, type: 3}
@@ -1508,6 +1511,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   printInfoToGUI: 0
+  yDebugTextOffset: 0
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: e236c0170c98b3a499dc5c4cb41009b1, type: 3}
   squareShader: {fileID: 0}
@@ -1942,6 +1946,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   printInfoToGUI: 1
+  yDebugTextOffset: 0
   pointShader: {fileID: 4800000, guid: 425abe991d52cc448a2a9c2b21a99248, type: 3}
   circleShader: {fileID: 4800000, guid: 863c2172d06b4224c844d0a0ef382942, type: 3}
   squareShader: {fileID: 4800000, guid: bd5ba14a9c25b7847b58ed763d68b9fb, type: 3}

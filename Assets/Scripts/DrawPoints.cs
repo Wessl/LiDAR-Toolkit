@@ -14,8 +14,10 @@ using UnityEngine.UI;
 /// </summary>
 public class DrawPoints : MonoBehaviour
 {
-    [Header("Temporary hacky half-baked 'solutions'")]
+    [Header("Debug text")]
     public bool printInfoToGUI = false;
+    [SerializeField] private int yDebugTextOffset;
+    
     [Header("Shader File References")]
     public Shader pointShader;
     public Shader circleShader;
@@ -321,14 +323,17 @@ public class DrawPoints : MonoBehaviour
         float ratioOfTotalUsed = Mathf.Min(_bufIndex, _posBuffer.count) / (float)_posBuffer.count;    // 1.0 => 100% of allocatable memory used up.
         float videoMem = (_computeBuffers.ToList().Sum(buffer => buffer.count) * 3 * 4 / (float)MEGABYTE * ratioOfTotalUsed);
         long pointsRendered = _bufIndex > _ComputeBufferSize ? _ComputeBufferSize : _bufIndex;
-        string text = $"{videoMem} MB of video memory used. {FormatNumber(pointsRendered)} points rendered.";
+        string myName = gameObject.name;
+        
+        string text = $"{myName}: {videoMem} MB of video memory used. {FormatNumber(pointsRendered)} points rendered.";
         if (videoMem > DANGEROUS_VIDEO_MEMORY_AMOUNT)
         {
-            // todo: is the dangerous video memory amount really set correctly? 
             text = videoMem + " MB of video memory used - Warning! Don't go higher unless you know what you're doing.";
         }
         
-        GUI.Label(new Rect(10, 10, 500, 40), text);
+        GUI.Label(new Rect(10,  10 + yDebugTextOffset, 500, 40), text);
+        
+        
     }
     
     private static string FormatNumber(long num)
