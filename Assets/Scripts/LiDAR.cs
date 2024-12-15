@@ -92,7 +92,8 @@ public class LiDAR : MonoBehaviour
     {
         mainCam = Camera.main;
         superScanWaitTime = 1 / (superScanSqrtNum / superScanMinTime);
-        lineRenderer.positionCount = 2;
+        if (lineRenderer != null)
+            lineRenderer.positionCount = 2;
         if (lineSpawnSource == null) lineSpawnSource = mainCam.transform;
     }
 
@@ -171,7 +172,7 @@ public class LiDAR : MonoBehaviour
     {
         CheckRayIntersections(cameraTransform.position, facingDir, pointsOn2dPlane);
         drawPointsRef.UploadPointData(RaycastedPointsHit, RaycastedPointColors, RaycastedNormals);
-        if (useLineRenderer)
+        if (useLineRenderer && lineRenderer != null)
         {
             foreach (var hitPos in RaycastedPointsHit)
             {

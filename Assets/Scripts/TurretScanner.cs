@@ -6,23 +6,47 @@ using UnityEngine;
 [RequireComponent(typeof(LiDAR))]
 public class TurretScanner : MonoBehaviour
 {
-    public float spinRate = 30f;
-    private LiDAR lidar;
-    private LineRenderer lineRenderer;
+    [SerializeField] private float spinRate = 30f;
+    [SerializeField] private TurretSpinType spinType;
+    private LiDAR m_lidar;
+    private LineRenderer m_lineRenderer;
+    private Transform m_transform;
+
+
+    private enum TurretSpinType
+    {
+        Circles,
+        BackAndForth
+    }
 
     private void Start()
     {
-        lidar = GetComponent<LiDAR>();
-        lineRenderer = GetComponent<LineRenderer>();
-        lidar.scanType = LiDAR.ScanType.Line;
+        m_lidar = GetComponent<LiDAR>();
+        m_transform = GetComponent<Transform>();
+        m_lineRenderer = GetComponent<LineRenderer>();
+        m_lidar.scanType = LiDAR.ScanType.Line;
     }
 
     // Update is called once per frame
     void Update()
     {
-        lineRenderer.positionCount = 0;    // Clear each frame
-        Transform myTransform = this.transform;
-        myTransform.Rotate(Vector3.right, spinRate * Time.deltaTime);
-        lidar.DefaultScan(myTransform.forward, myTransform);
+        m_lineRenderer.positionCount = 0;    // Clear each frame
+        switch (spinType)
+        {
+            case TurretSpinType.Circles:
+                CircleSpin();
+                break;
+            case TurretSpinType.BackAndForth:
+            default:
+                throw new NotImplementedException();
+                break;
+        }
+        
+        m_lidar.DefaultScan(m_transform.forward, m_transform);
+    }
+
+    private void CircleSpin()
+    {
+        m_transform.Rotate(Vector3.up, spinRate * Time.deltaTime);
     }
 }
